@@ -1,6 +1,8 @@
 package singularity
 
-type Requests []struct {
+// Request struct contains all singularity requests.
+// This have a JSON response of /api/requests.
+type Request struct {
 	Request struct {
 		ID                  string `json:"id"`
 		Instances           int64  `json:"instances"`
@@ -20,7 +22,12 @@ type Requests []struct {
 	} `json:"requestDeployState"`
 	State string `json:"state"`
 }
-type request struct {
+
+// Requests is a slice of Request.
+type Requests []Request
+
+// RequestDockerID contains JSON response of /api/requests/request/ID.
+type RequestDockerID struct {
 	ActiveDeploy struct {
 		Arguments     []string `json:"arguments"`
 		Command       string   `json:"command"`
