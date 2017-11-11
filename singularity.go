@@ -47,8 +47,11 @@ func conf(c *Config) retryablehttp.Client {
 
 func endpoint(c *Config) string {
 	// if port is uninitialised, port would be http/80.
-	if c.Port == 0 {
+	if c.Port == 0 || c.Port == 80 {
 		return "http://" + c.Host
+	}
+	if c.Port == 443 {
+		return "https://" + c.Host
 	}
 	return "http://" + c.Host + ":" + strconv.Itoa(c.Port)
 }
@@ -59,7 +62,7 @@ func (c *Client) GetRequests() (Requests, error) {
 
 	r, err := c.RetryableHTTPClient.Get(c.Endpoint + "/api/requests")
 	if err != nil {
-		return nil, fmt.Errorf("Get requests error: %v", err)
+		return nil, fmt.Errorf("Singularity Requests not found: %v", err)
 	}
 	var response Requests
 	body, err := ioutil.ReadAll(r.Body)
@@ -80,25 +83,4 @@ func (c *Client) GetRequestByID(id string) (*RequestDockerID, error) {
 
 	json.Unmarshal(body, &response)
 	return &response, nil
-}
-
-// GetRequestID returns string ID of specific request.
-func (r Request) GetRequestID() string {
-	return r.Request.ID
-}
-
-// GetRequestInstances returns number of instances for a job/task.
-func (r Request) GetRequestInstances() int64 {
-	return r.Request.Instances
-}
-
-// GetRequestSchedule returns a job/task's schedule.
-func (r Request) GetRequestSchedule() string {
-	return r.Request.Schedule
-}
-
-// GetRequestScheduleType returns a job/task's schedule type.
-// Cron, Service, onDemand.
-func (r Request) GetRequestScheduleType() string {
-	return r.Request.ScheduleType
 }

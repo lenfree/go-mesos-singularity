@@ -3,7 +3,7 @@ package singularity
 // Request struct contains all singularity requests.
 // This have a JSON response of /api/requests.
 type Request struct {
-	Request struct {
+	SingularityRequest struct {
 		ID                  string `json:"id"`
 		Instances           int64  `json:"instances"`
 		NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
@@ -12,7 +12,7 @@ type Request struct {
 		Schedule            string `json:"schedule"`
 		ScheduleType        string `json:"scheduleType"`
 	} `json:"request"`
-	RequestDeployState struct {
+	SingularityRequestDeployState struct {
 		ActiveDeploy struct {
 			DeployID  string `json:"deployId"`
 			RequestID string `json:"requestId"`
