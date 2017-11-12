@@ -104,7 +104,7 @@ func TestGetRequests(t *testing.T) {
 		t.Errorf("Got %s, expected %s", res[0].SingularityRequest.RequestType, expectedRequestType)
 	}
 
-	if int(res[0].SingularityRequestDeployState.ActiveDeploy.Timestamp) != int(expectedDeployTimestamp) {
-		t.Errorf("Got %d, expected %d", res[0].SingularityRequestDeployState.ActiveDeploy.Timestamp, expectedDeployTimestamp)
+	if int(res[0].SingularityDeployState.ActiveDeploy.Timestamp) != int(expectedDeployTimestamp) {
+		t.Errorf("Got %d, expected %d", res[0].SingularityDeployState.ActiveDeploy.Timestamp, expectedDeployTimestamp)
 	}
 }

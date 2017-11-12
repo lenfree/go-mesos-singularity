@@ -1,26 +1,34 @@
 package singularity
 
+// SingularityRequest contains a high level information of
+//  for a single project or deployable item.
+type SingularityRequest struct {
+	ID                  string `json:"id"`
+	Instances           int64  `json:"instances"`
+	NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
+	QuartzSchedule      string `json:"quartzSchedule"`
+	RequestType         string `json:"requestType"`
+	Schedule            string `json:"schedule"`
+	ScheduleType        string `json:"scheduleType"`
+}
+
+// SingularityDeployState contains specific configuration or version
+// of the running code for that deployable item
+type SingularityDeployState struct {
+	ActiveDeploy struct {
+		DeployID  string `json:"deployId"`
+		RequestID string `json:"requestId"`
+		Timestamp int64  `json:"timestamp"`
+	} `json:"activeDeploy"`
+	RequestID string `json:"requestId"`
+}
+
 // Request struct contains all singularity requests.
 // This have a JSON response of /api/requests.
 type Request struct {
-	SingularityRequest struct {
-		ID                  string `json:"id"`
-		Instances           int64  `json:"instances"`
-		NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
-		QuartzSchedule      string `json:"quartzSchedule"`
-		RequestType         string `json:"requestType"`
-		Schedule            string `json:"schedule"`
-		ScheduleType        string `json:"scheduleType"`
-	} `json:"request"`
-	SingularityRequestDeployState struct {
-		ActiveDeploy struct {
-			DeployID  string `json:"deployId"`
-			RequestID string `json:"requestId"`
-			Timestamp int64  `json:"timestamp"`
-		} `json:"activeDeploy"`
-		RequestID string `json:"requestId"`
-	} `json:"requestDeployState"`
-	State string `json:"state"`
+	SingularityRequest     `json:"request"`
+	SingularityDeployState `json:"requestDeployState"`
+	State                  string `json:"state"`
 }
 
 // Requests is a slice of Request.
@@ -83,4 +91,14 @@ type RequestDockerID struct {
 		RequestID string `json:"requestId"`
 	} `json:"requestDeployState"`
 	State string `json:"state"`
+}
+
+type Resources struct {
+	NumPorts int
+	MemoryMb int
+	DiskMb   int
+	CPUs     int
+}
+
+type RunNowRequest struct {
 }
