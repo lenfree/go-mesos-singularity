@@ -3,24 +3,46 @@ package singularity
 // SingularityRequest contains a high level information of
 //  for a single project or deployable item.
 type SingularityRequest struct {
-	ID                  string `json:"id"`
-	Instances           int64  `json:"instances"`
-	NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
-	QuartzSchedule      string `json:"quartzSchedule"`
-	RequestType         string `json:"requestType"`
-	Schedule            string `json:"schedule"`
-	ScheduleType        string `json:"scheduleType"`
+	ID                                              string            `json:"id"`
+	Instances                                       int64             `json:"instances"`
+	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
+	QuartzSchedule                                  string            `json:"quartzSchedule"`
+	RequestType                                     string            `json:"requestType"`
+	Schedule                                        string            `json:"schedule"`
+	ScheduleType                                    string            `json:"scheduleType"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
+type ActiveDeploy struct {
+	DeployID  string `json:"deployId"`
+	RequestID string `json:"requestId"`
+	Timestamp int64  `json:"timestamp"`
 }
 
 // SingularityDeployState contains specific configuration or version
 // of the running code for that deployable item
 type SingularityDeployState struct {
-	ActiveDeploy struct {
-		DeployID  string `json:"deployId"`
-		RequestID string `json:"requestId"`
-		Timestamp int64  `json:"timestamp"`
-	} `json:"activeDeploy"`
-	RequestID string `json:"requestId"`
+	ActiveDeploy `json:"activeDeploy"`
+	RequestID    string `json:"requestId"`
 }
 
 // Request struct contains all singularity requests.

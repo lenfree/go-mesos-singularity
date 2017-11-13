@@ -4,42 +4,31 @@ package singularity
 
 import (
 	"strconv"
-	"time"
 
-	retryablehttp "github.com/hashicorp/go-retryablehttp"
+	"github.com/parnurzeal/gorequest"
 )
 
 // Client contains Singularity endpoint for http requests
 type Client struct {
-	Endpoint            string
-	RetryableHTTPClient retryablehttp.Client
+	Endpoint   string
+	SuperAgent gorequest.SuperAgent
 }
 
 // Config contains Singularity HTTP endpoint and configuration for
 // retryablehttp client's retry options
 type Config struct {
-	Host         string
-	Port         int
-	RetryMax     int
-	RetryWaitMin int
-	RetryWaitMax int
+	Host  string
+	Port  int
+	Retry int
 }
 
 // New returns Singularity HTTP endpoint.
 func New(c Config) *Client {
-	cl := &Client{
-		Endpoint:            endpoint(&c),
-		RetryableHTTPClient: conf(&c),
+	a := gorequest.New()
+	return &Client{
+		Endpoint:   endpoint(&c),
+		SuperAgent: *a,
 	}
-	return cl
-}
-
-func conf(c *Config) retryablehttp.Client {
-	client := retryablehttp.NewClient()
-	client.RetryMax = c.RetryMax
-	client.RetryWaitMax = time.Duration(c.RetryWaitMax)
-	client.RetryWaitMin = time.Duration(c.RetryWaitMin)
-	return *client
 }
 
 func endpoint(c *Config) string {
