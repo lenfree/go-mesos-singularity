@@ -122,5 +122,134 @@ type Resources struct {
 	CPUs     int
 }
 
+type RequestService struct {
+	ID                                              string            `json:"id"`
+	Instances                                       int64             `json:"instances"`
+	RequestType                                     string            `json:"requestType"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
+type RequestOnDemand struct {
+	ID                                              string            `json:"id"`
+	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
+	RequestType                                     string            `json:"requestType"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
+type RequestScheduled struct {
+	ID                                              string            `json:"id"`
+	Instances                                       int64             `json:"instances"`
+	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
+	RequestType                                     string            `json:"requestType"`
+	Schedule                                        string            `json:"schedule"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
+type RequestWorker struct {
+	ID                                              string            `json:"id"`
+	Instances                                       int64             `json:"instances"`
+	RequestType                                     string            `json:"requestType"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
+type RequestRunOnce struct {
+	ID                                              string            `json:"id"`
+	Instances                                       int64             `json:"instances"`
+	RequestType                                     string            `json:"requestType"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
+	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
+	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
+	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
+	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
+	RackAffinity                                    []string          `json:"RackAffinity"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	BounceAfterScale                                bool              `json:"bounceAfterScale"`
+	RackSensitive                                   bool              `json:"rackSensitive"`
+	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
+	Owners                                          []string          `json:"owners"`
+	RequiredRole                                    string            `json:"requiredRole"`
+	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
+	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
+	LoadBalanced                                    bool              `json:"loadBalanced"`
+	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
+	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
+	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
+}
+
 type RunNowRequest struct {
 }

@@ -3,11 +3,10 @@ package singularity
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
-	"net/http"
-	"net/http/httptest"
 	"testing"
+
+	httpmock "gopkg.in/jarcoal/httpmock.v1"
 )
 
 func TestClient_GetRequests(t *testing.T) {
@@ -37,23 +36,22 @@ func TestClient_GetRequests(t *testing.T) {
 		Host: "127.0.0.1",
 	}
 	c := New(config)
-	ba, _ := json.Marshal(data)
-	handler := func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(401)
-		io.WriteString(w, string(ba))
-	}
 
-	resp, _, _ := c.GetRequests()
-	w := httptest.NewRecorder()
-	handler(w, resp.Request)
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+	da, _ := json.Marshal(data)
+	httpmock.NewMockTransport().RegisterResponder("GET", "http://foo.com/bar", httpmock.NewStringResponder(200, string(da)))
 
-	resp1 := w.Result()
+	req, _, _ := c.SuperAgent.Get("http://foo.com/bar").End()
+	//	req, _, _ := c.GetRequests()
+	//	req, _ := http.NewRequest("GET", "http://foo.com/bar", nil)
 
-	b, _ := ioutil.ReadAll(resp1.Body)
+	req.
+		fmt.Println("val: ", req)
+	//res, _ := (&http.Client{}).Do(req)
+	z, _ := ioutil.ReadAll(req.Body)
+	fmt.Println("val: ", string(z))
 
-	fmt.Printf("Req: %+#v\n", resp.Request)
-	fmt.Printf("Req: %+#v\n", resp1.StatusCode)
-	fmt.Printf("Body: %+#v\n", string(b))
 	/*
 		st.Expect(t, err, nil)
 		st.Expect(t, res.StatusCode, 200)
