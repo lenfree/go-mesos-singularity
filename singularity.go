@@ -1,5 +1,5 @@
-// Package singularity is a abstraction for http requests to
-// Mesos Singularity Framework.
+// Package singularity provides simple interface to manage Mesos'
+// Singularity jobs and tasks lifecycle.
 package singularity
 
 import (

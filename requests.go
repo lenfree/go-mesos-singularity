@@ -37,23 +37,9 @@ func (c *Client) GetRequestByID(id string) (gorequest.Response, RequestDockerID,
 	return res, body, nil
 }
 
-type ServiceRequest interface {
-	createRequest(*Client)
-}
-
-func CreateRequest(r ServiceRequest, c *Client) {
-	r.createRequest(c)
-}
-
-func NewOnDemandRequest() RequestOnDemand {
-	return RequestOnDemand{
-		ID:          "lenfree-test",
-		RequestType: "ON_DEMAND",
-	}
-}
-
-//SERVICE, WORKER, SCHEDULED, ON_DEMAND, RUN_ONCE]"}                                                                            │7.2.0  💧 1.5.2   master ✘ ✖ ✹  12s 
-func (r RequestOnDemand) createRequest(c *Client) {
+// CreateRequest creates a Singularity job based on a requestType.
+// Types of requests are: SERVICE, WORKER, SCHEDULED, ON_DEMAND, RUN_ONCE.
+func (c *Client) CreateRequest(r ServiceRequest) {
 	c.SuperAgent.SetDebug(true)
 	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
 		Send(r).
@@ -66,6 +52,29 @@ func (r RequestOnDemand) createRequest(c *Client) {
 	log.Printf("%+#v\n", res)
 }
 
+// ServiceRequest is an interface to different types of Singularity job requestType.
+type ServiceRequest interface {
+	GetID()
+}
+
+// NewOnDemandRequest returns a RequestOnDemand struct. This
+// contains parameters required to create a ON_DEMAND type
+// of Singularity job/task.
+func NewOnDemandRequest() RequestOnDemand {
+	return RequestOnDemand{
+		ID:          "lenfree-test",
+		RequestType: "ON_DEMAND",
+	}
+}
+
+// GetID is a placeholder.
+func (r RequestOnDemand) GetID() {
+	fmt.Println(r.ID)
+}
+
+// NewServiceRequest returns a RequestService struct. This
+// contains parameters required to create a SERVICE type
+// of Singularity job/task.
 func NewServiceRequest() RequestService {
 	return RequestService{
 		ID:          "lenfree-test-service",
@@ -74,19 +83,14 @@ func NewServiceRequest() RequestService {
 	}
 }
 
-func (r RequestService) createRequest(c *Client) {
-	c.SuperAgent.SetDebug(true)
-	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
-		Send(r).
-		End()
-
-	if err != nil {
-		log.Println(err)
-	}
-	log.Printf("%+#v\n", string(body))
-	log.Printf("%+#v\n", res)
+// GetID is a placeholder.
+func (r RequestService) GetID() {
+	fmt.Println(r.ID)
 }
 
+// NewScheduledRequest returns a RequestScheduled struct. This
+// contains parameters required to create a SCHEDULED type
+// of Singularity job/task.
 func NewScheduledRequest() RequestScheduled {
 	return RequestScheduled{
 		ID:          "lenfree-test-scheduled",
@@ -96,19 +100,14 @@ func NewScheduledRequest() RequestScheduled {
 	}
 }
 
-func (r RequestScheduled) createRequest(c *Client) {
-	c.SuperAgent.SetDebug(true)
-	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
-		Send(r).
-		End()
-
-	if err != nil {
-		log.Println(err)
-	}
-	log.Printf("%+#v\n", string(body))
-	log.Printf("%+#v\n", res)
+// GetID is a placeholder.
+func (r RequestScheduled) GetID() {
+	fmt.Println(r.ID)
 }
 
+// NewWorkerRequest returns a RequestWorker struct. This
+// contains parameters required to create a WORKER type
+// of Singularity job/task.
 func NewWorkerRequest() RequestWorker {
 	return RequestWorker{
 		ID:          "lenfree-test-worker",
@@ -117,36 +116,23 @@ func NewWorkerRequest() RequestWorker {
 	}
 }
 
-func (r RequestWorker) createRequest(c *Client) {
-	c.SuperAgent.SetDebug(true)
-	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
-		Send(r).
-		End()
-
-	if err != nil {
-		log.Println(err)
-	}
-	log.Printf("%+#v\n", string(body))
-	log.Printf("%+#v\n", res)
+// GetID is a placeholder.
+func (r RequestWorker) GetID() {
+	fmt.Println(r.ID)
 }
 
+// NewRunOnceRequest returns a RequestRunOnce struct. This
+// contains parameters required to create a RUN_ONCE type
+// of Singularity job/task.
 func NewRunOnceRequest() RequestRunOnce {
 	return RequestRunOnce{
 		ID:          "lenfree-test-runonce",
-		RequestType: "WORKER",
+		RequestType: "RUN_ONCE",
 		Instances:   1,
 	}
 }
 
-func (r RequestRunOnce) createRequest(c *Client) {
-	c.SuperAgent.SetDebug(true)
-	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
-		Send(r).
-		End()
-
-	if err != nil {
-		log.Println(err)
-	}
-	log.Printf("%+#v\n", string(body))
-	log.Printf("%+#v\n", res)
+// GetID is a placeholder.
+func (r RequestRunOnce) GetID() {
+	fmt.Println(r.ID)
 }

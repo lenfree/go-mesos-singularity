@@ -46,8 +46,7 @@ func TestClient_GetRequests(t *testing.T) {
 	//	req, _, _ := c.GetRequests()
 	//	req, _ := http.NewRequest("GET", "http://foo.com/bar", nil)
 
-	req.
-		fmt.Println("val: ", req)
+	fmt.Println("val: ", req)
 	//res, _ := (&http.Client{}).Do(req)
 	z, _ := ioutil.ReadAll(req.Body)
 	fmt.Println("val: ", string(z))
