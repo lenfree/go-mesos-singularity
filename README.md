@@ -7,7 +7,20 @@ having this package is so I could write a Terraform provider to
 interface with this.
 
 ## Usage
+
+For package dependency management, we use dep:
 ```bash
+$ go get -u github.com/golang/dep/cmd/dep
+```
+
+If new package is required, pls run below command
+after go get. For more information about dep, please
+visit this URL https://github.com/golang/dep.
+```bash
+$ dep ensure
+```
+
+```go
 package main
 
 import (
