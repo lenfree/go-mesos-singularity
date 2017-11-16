@@ -1,8 +1,8 @@
 package singularity
 
 import (
+	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
@@ -25,36 +25,52 @@ func (c *Client) GetRequests() (gorequest.Response, Requests, error) {
 
 // GetRequestByID retrieve a specific Singularity Request by ID
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#get-apirequestsrequestrequestid
-func (c *Client) GetRequestByID(id string) (gorequest.Response, RequestDockerID, error) {
-	var body RequestDockerID
-	res, _, err := c.SuperAgent.Get(c.Endpoint+"/api/requests/request"+"/"+id).
+func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
+	res, body, err := c.SuperAgent.Get(c.Endpoint+"/api/requests/request"+"/"+id).
 		Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError).
-		EndStruct(&body)
+		End()
 
 	if err != nil {
-		return nil, body, fmt.Errorf("Request ID not found: %v", err)
+		return HTTPResponse{}, fmt.Errorf("Request ID not found: %v", err)
 	}
-	return res, body, nil
+	var data Task
+	json.Unmarshal([]byte(body), &data)
+	response := HTTPResponse{
+		Res:  res,
+		Task: data,
+	}
+	return response, nil
+}
+
+// HTTPResponse contains response and body from a http query.
+type HTTPResponse struct {
+	Res  gorequest.Response
+	Body Request
+	Task Task
 }
 
 // CreateRequest creates a Singularity job based on a requestType.
 // Types of requests are: SERVICE, WORKER, SCHEDULED, ON_DEMAND, RUN_ONCE.
-func (c *Client) CreateRequest(r ServiceRequest) {
-	c.SuperAgent.SetDebug(true)
-	res, body, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+func (c *Client) CreateRequest(r ServiceRequest) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
 		Send(r).
-		End()
+		EndStruct(&body)
 
 	if err != nil {
-		log.Println(err)
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
-	log.Printf("%+#v\n", string(body))
-	log.Printf("%+#v\n", res)
+
+	response := HTTPResponse{
+		Res:  res,
+		Body: body,
+	}
+	return response, nil
 }
 
 // ServiceRequest is an interface to different types of Singularity job requestType.
 type ServiceRequest interface {
-	GetID()
+	GetID() string
 }
 
 // NewOnDemandRequest returns a RequestOnDemand struct. This
@@ -67,9 +83,9 @@ func NewOnDemandRequest() RequestOnDemand {
 	}
 }
 
-// GetID is a placeholder.
-func (r RequestOnDemand) GetID() {
-	fmt.Println(r.ID)
+// GetID returns ID of a Singularity Request.
+func (r RequestOnDemand) GetID() string {
+	return r.ID
 }
 
 // NewServiceRequest returns a RequestService struct. This
@@ -83,9 +99,9 @@ func NewServiceRequest() RequestService {
 	}
 }
 
-// GetID is a placeholder.
-func (r RequestService) GetID() {
-	fmt.Println(r.ID)
+// GetID returns ID of a Singularity Request.
+func (r RequestService) GetID() string {
+	return r.ID
 }
 
 // NewScheduledRequest returns a RequestScheduled struct. This
@@ -101,8 +117,8 @@ func NewScheduledRequest() RequestScheduled {
 }
 
 // GetID is a placeholder.
-func (r RequestScheduled) GetID() {
-	fmt.Println(r.ID)
+func (r RequestScheduled) GetID() string {
+	return r.ID
 }
 
 // NewWorkerRequest returns a RequestWorker struct. This
@@ -117,8 +133,8 @@ func NewWorkerRequest() RequestWorker {
 }
 
 // GetID is a placeholder.
-func (r RequestWorker) GetID() {
-	fmt.Println(r.ID)
+func (r RequestWorker) GetID() string {
+	return r.ID
 }
 
 // NewRunOnceRequest returns a RequestRunOnce struct. This
@@ -133,6 +149,6 @@ func NewRunOnceRequest() RequestRunOnce {
 }
 
 // GetID is a placeholder.
-func (r RequestRunOnce) GetID() {
-	fmt.Println(r.ID)
+func (r RequestRunOnce) GetID() string {
+	return r.ID
 }

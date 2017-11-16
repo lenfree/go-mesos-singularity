@@ -56,8 +56,8 @@ type Request struct {
 // Requests is a slice of Request.
 type Requests []Request
 
-// RequestDockerID contains JSON response of /api/requests/request/ID.
-type RequestDockerID struct {
+// Task contains JSON response of /api/requests/request/ID.
+type Task struct {
 	ActiveDeploy struct {
 		Arguments     []string `json:"arguments"`
 		Command       string   `json:"command"`
@@ -84,8 +84,9 @@ type RequestDockerID struct {
 			} `json:"volumes"`
 		} `json:"containerInfo"`
 		Env struct {
-			ClubID   string `json:"CLUB_ID"`
-			ClubName string `json:"CLUB_NAME"`
+			ClubID             string      `json:"CLUB_ID"`
+			ClubName           string      `json:"CLUB_NAME"`
+			DockerImageVersion interface{} `json:"DOCKER_IMAGE_VERSION"`
 		} `json:"env"`
 		ID        string `json:"id"`
 		RequestID string `json:"requestId"`
@@ -99,10 +100,7 @@ type RequestDockerID struct {
 	Request struct {
 		ID                  string `json:"id"`
 		NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
-		QuartzSchedule      string `json:"quartzSchedule"`
 		RequestType         string `json:"requestType"`
-		Schedule            string `json:"schedule"`
-		ScheduleType        string `json:"scheduleType"`
 	} `json:"request"`
 	RequestDeployState struct {
 		ActiveDeploy struct {

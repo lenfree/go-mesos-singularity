@@ -1,6 +1,8 @@
 package singularity_test
 
 import (
+	"fmt"
+
 	singularity "github.com/lenfree/go-singularity"
 )
 
@@ -10,7 +12,8 @@ func ExampleClient_CreateRequest() {
 	}
 	client := singularity.New(config)
 	onDemandTypeReq := singularity.NewOnDemandRequest()
-	client.CreateRequest(onDemandTypeReq)
+	res, _ := client.CreateRequest(onDemandTypeReq)
+	fmt.Println(res.Body)
 
 	// Output:
 	// {"request":
@@ -29,4 +32,23 @@ func ExampleClient_CreateRequest() {
 	//	},
 	//	"state":"ACTIVE"}"
 	//)
+
+	fmt.Println(res.Res.Status)
+
+	// Output:
+	// 200 OK
+}
+
+func ExampleClient_GetRequestByID() {
+	config := singularity.Config{
+		Host: "localhost/singularity",
+	}
+	client := singularity.New(config)
+	_, r, _ := client.GetRequests()
+
+	resp, _ := client.GetRequestByID(r[0].ID)
+	fmt.Println(resp.Task.ActiveDeploy.ContainerInfo.Docker.Image)
+
+	// Output:
+	// golang:latest
 }
