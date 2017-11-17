@@ -113,13 +113,8 @@ type Task struct {
 	State string `json:"state"`
 }
 
-type Resources struct {
-	NumPorts int
-	MemoryMb int
-	DiskMb   int
-	CPUs     int
-}
-
+// RequestService contains required HTTP body to create a Singularity Request with requestType
+// SERVICE.
 type RequestService struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
@@ -145,6 +140,8 @@ type RequestService struct {
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
 }
 
+// RequestOnDemand contains required HTTP body to create a Singularity Request with requestType
+// ON_DEMAND.
 type RequestOnDemand struct {
 	ID                                              string            `json:"id"`
 	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
@@ -171,6 +168,8 @@ type RequestOnDemand struct {
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
 }
 
+// RequestScheduled contains required HTTP body to create a Singularity Request with requestType
+// Scheduled.
 type RequestScheduled struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
@@ -199,6 +198,8 @@ type RequestScheduled struct {
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
 }
 
+// RequestWorker contains required HTTP body to create a Singularity Request with requestType
+// WORKER.
 type RequestWorker struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
@@ -224,6 +225,8 @@ type RequestWorker struct {
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
 }
 
+// RequestRunOnce contains required HTTP body to create a Singularity Request with requestType
+// RUN_ONCE.
 type RequestRunOnce struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
@@ -250,4 +253,14 @@ type RequestRunOnce struct {
 }
 
 type RunNowRequest struct {
+}
+
+// DeleteRequest contains HTTP body for a Delete Singularity Request. Please see below URL for
+// more information.
+// https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#delete-apirequestsrequestrequestid
+// https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#-singularitydeleterequestrequest
+type DeleteRequest struct {
+	DeleteFromLoadBalancer bool   `json:"deleteFromLoadBalancer"` //optional	Should the service associated with the request be removed from the load balancer
+	Message                string `json:"message"`                //optional	A message to show to users about why this action was taken
+	ActionID               string `json:"actionId"`               //An id to associate with this action for metadata purposes
 }

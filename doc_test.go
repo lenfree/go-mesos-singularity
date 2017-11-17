@@ -52,3 +52,17 @@ func ExampleClient_GetRequestByID() {
 	// Output:
 	// golang:latest
 }
+
+func ExampleClient_DeleteRequestByID() {
+	config := singularity.Config{
+		Host: "localhost/singularity",
+	}
+	client := singularity.New(config)
+
+	d := singularity.DeleteRequest{}
+	r, _ := client.DeleteRequestByID("lenfree-test-worker", d)
+	fmt.Println(r.Response.ID)
+
+	// Output:
+	// lenfree-test-worker
+}

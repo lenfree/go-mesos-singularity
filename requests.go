@@ -18,12 +18,12 @@ func (c *Client) GetRequests() (gorequest.Response, Requests, error) {
 		EndStruct(&body)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Singularity Requests not found: %v", err)
+		return nil, nil, fmt.Errorf("Get Singularity Requests not found: %v", err)
 	}
 	return res, body, nil
 }
 
-// GetRequestByID retrieve a specific Singularity Request by ID
+// GetRequestByID accpets string id and retrieve a specific Singularity Request by ID
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#get-apirequestsrequestrequestid
 func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 	res, body, err := c.SuperAgent.Get(c.Endpoint+"/api/requests/request"+"/"+id).
@@ -31,26 +31,32 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		End()
 
 	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Request ID not found: %v", err)
+		return HTTPResponse{}, fmt.Errorf("Get Singularity Request not found: %v", err)
 	}
 	var data Task
-	json.Unmarshal([]byte(body), &data)
+	e := json.Unmarshal([]byte(body), &data)
+
+	if e != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity Request delete error: %v", e)
+	}
 	response := HTTPResponse{
-		Res:  res,
-		Task: data,
+		GoRes: res,
+		Task:  data,
 	}
 	return response, nil
 }
 
 // HTTPResponse contains response and body from a http query.
 type HTTPResponse struct {
-	Res  gorequest.Response
-	Body Request
-	Task Task
+	GoRes    gorequest.Response
+	Body     Request
+	Task     Task
+	Response SingularityRequest
 }
 
-// CreateRequest creates a Singularity job based on a requestType.
-// Types of requests are: SERVICE, WORKER, SCHEDULED, ON_DEMAND, RUN_ONCE.
+// CreateRequest accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
 func (c *Client) CreateRequest(r ServiceRequest) (HTTPResponse, error) {
 	var body Request
 	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
@@ -58,12 +64,12 @@ func (c *Client) CreateRequest(r ServiceRequest) (HTTPResponse, error) {
 		EndStruct(&body)
 
 	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+		return HTTPResponse{}, fmt.Errorf("Create Singularity Request error: %v", err)
 	}
 
 	response := HTTPResponse{
-		Res:  res,
-		Body: body,
+		GoRes: res,
+		Body:  body,
 	}
 	return response, nil
 }
@@ -151,4 +157,29 @@ func NewRunOnceRequest() RequestRunOnce {
 // GetID is a placeholder.
 func (r RequestRunOnce) GetID() string {
 	return r.ID
+}
+
+// DeleteRequestByID accepts id as a string and a type DeleteRequest that
+// contains metadata when deleting this Request.
+func (c *Client) DeleteRequestByID(id string, r DeleteRequest) (HTTPResponse, error) {
+	res, body, err := c.SuperAgent.Delete(c.Endpoint + "/api/requests/request/" + id).
+		Send(r).
+		End()
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Delete Singularity request error: %v", err)
+	}
+
+	var data SingularityRequest
+
+	e := json.Unmarshal([]byte(body), &data)
+	if e != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity Request delete error: %v", e)
+	}
+
+	response := HTTPResponse{
+		GoRes:    res,
+		Response: data,
+	}
+	return response, nil
 }

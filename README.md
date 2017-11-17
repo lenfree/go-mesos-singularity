@@ -1,25 +1,37 @@
 go-singularity
 --------------
 
+[![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)][godocs]
+
+[godocs]: https://godoc.org/github.com/lenfree/go-mesos-singularity
+
 A Mesos hubspot/Singularity package written in Go. Since I couldn't
 manage to find one, hence, write a new one. One of the intention of
 having this package is so I could write a Terraform provider to
 interface with this.
 
-## Usage
+# Status [ WORK IN PROGRESS ]
+
+## Usage:
+
+Import package
+```bash
+go get github.com/lenfree/go-mesos-singularity
+```
 
 For package dependency management, we use dep:
 ```bash
-$ go get -u github.com/golang/dep/cmd/dep
+go get -u github.com/golang/dep/cmd/dep
 ```
 
 If new package is required, pls run below command
 after go get. For more information about dep, please
 visit this URL https://github.com/golang/dep.
 ```bash
-$ dep ensure
+dep ensure
 ```
 
+Examples:
 ```go
 package main
 
