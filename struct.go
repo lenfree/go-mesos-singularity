@@ -7,7 +7,7 @@ type SingularityRequest struct {
 	Instances                                       int64             `json:"instances"`
 	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
 	QuartzSchedule                                  string            `json:"quartzSchedule"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	Schedule                                        string            `json:"schedule"`
 	ScheduleType                                    string            `json:"scheduleType"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
@@ -118,7 +118,7 @@ type Task struct {
 type RequestService struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
@@ -145,7 +145,7 @@ type RequestService struct {
 type RequestOnDemand struct {
 	ID                                              string            `json:"id"`
 	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
@@ -174,7 +174,7 @@ type RequestScheduled struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
 	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	Schedule                                        string            `json:"schedule"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
@@ -203,7 +203,7 @@ type RequestScheduled struct {
 type RequestWorker struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
@@ -230,7 +230,7 @@ type RequestWorker struct {
 type RequestRunOnce struct {
 	ID                                              string            `json:"id"`
 	Instances                                       int64             `json:"instances"`
-	requestType                                     string            `json:"requestType"`
+	RequestType                                     string            `json:"requestType"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`

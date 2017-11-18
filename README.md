@@ -31,6 +31,16 @@ visit this URL https://github.com/golang/dep.
 dep ensure
 ```
 
+Run test:
+```bash
+make test
+```
+
+To maintain codebase quality with static checks and analysis:
+```bash
+make run
+```
+
 Examples:
 ```go
 package main

@@ -1,3 +1,5 @@
+// +build !doc
+
 package singularity_test
 
 import (

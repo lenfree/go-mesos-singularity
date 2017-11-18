@@ -20,12 +20,6 @@
   version = "v0.8.0"
 
 [[projects]]
-  name = "github.com/robfig/cron"
-  packages = ["."]
-  revision = "b024fc5ea0e34bc3f83d9941c8d60b0622bfaca4"
-  version = "v1"
-
-[[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = ["idna","publicsuffix"]
@@ -38,14 +32,14 @@
   revision = "88f656faf3f37f690df1a32515b479415e1a6769"
 
 [[projects]]
-  branch = "v1"
-  name = "gopkg.in/jarcoal/httpmock.v1"
+  branch = "v2"
+  name = "gopkg.in/robfig/cron.v2"
   packages = ["."]
-  revision = "cf52904a3cf0f78f199ecade6a6df8e245d5b25a"
+  revision = "be2e0b0deed5a68ffee390b4583a13aff8321535"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "dc01293490d79c164552de28d1ceb35120b36910b0857b0d72f173c96369053a"
+  inputs-digest = "eb869e3a2074eedfd4201e675a7212a9772c1e8f562a08038c1f9d18e0f52aad"
   solver-name = "gps-cdcl"
   solver-version = 1
