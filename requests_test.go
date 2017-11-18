@@ -65,17 +65,8 @@ func TestOnDemandSetBounceAfterScale(t *testing.T) {
 		t.Errorf("Got %v, expected %v", req.BounceAfterScale, expectedBool)
 	}
 }
-func TestNewOnDemandSetLoadBalanced(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedBool := true
-	req := NewOnDemandRequest(expectedID)
-	req.SetLoadBalanced(expectedBool)
-	if req.LoadBalanced != expectedBool {
-		t.Errorf("Got %v, expected %v", req.LoadBalanced, expectedBool)
-	}
-}
 
-func TestNewServicRequest(t *testing.T) {
+func TestNewServiceRequest(t *testing.T) {
 	expectedID := "test-service"
 	expectedType := "SERVICE"
 	var n int64 = 3
@@ -100,18 +91,24 @@ func TestServiceRequestInstances(t *testing.T) {
 		t.Errorf("Got %v, expected %v", req.Instances, expectedInstances)
 	}
 }
+func TestServiceSetLoadBalanced(t *testing.T) {
+	expectedID := "test-service"
+	expectedBool := true
+	var expectedInstances int64 = 25
+	req := NewServiceRequest(expectedID, expectedInstances)
+	req.SetLoadBalanced(true)
+	if req.LoadBalanced != expectedBool {
+		t.Errorf("Got %v, expected %v", req.LoadBalanced, expectedBool)
+	}
+}
 
 func TestNewScheduledRequest(t *testing.T) {
 	expectedID := "test-scheduled"
 	expectedType := "SCHEDULED"
 	expectedCron := "*/30 * * * *"
-	var n int64 = 3
-	req, _ := NewScheduledRequest(expectedID, expectedCron, n)
+	req, _ := NewScheduledRequest(expectedID, expectedCron)
 	if req.ID != expectedID {
 		t.Errorf("Got %s, expected %s", req.ID, expectedID)
-	}
-	if req.Instances != n {
-		t.Errorf("Got %v, expected %v", req.Instances, n)
 	}
 	if req.RequestType != expectedType {
 		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
@@ -122,7 +119,7 @@ func TestNewScheduledRequest(t *testing.T) {
 
 	invalidCron := "* * * * * * *"
 	expectedError := "Parse * * * * * * cron schedule error Expected exactly 5 fields, found 6: * * * * * *"
-	reqError, err := NewScheduledRequest(expectedID, invalidCron, n)
+	reqError, err := NewScheduledRequest(expectedID, invalidCron)
 
 	if err == nil {
 		t.Errorf("Got %v, expected %s", err, expectedError)
