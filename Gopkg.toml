@@ -26,5 +26,9 @@
   version = "0.2.15"
 
 [[constraint]]
+  name = "github.com/robfig/cron"
+  version = "1.0.0"
+
+[[constraint]]
   branch = "v1"
   name = "gopkg.in/jarcoal/httpmock.v1"

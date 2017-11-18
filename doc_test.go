@@ -11,7 +11,7 @@ func ExampleClient_CreateRequest() {
 		Host: "localhost/singularity",
 	}
 	client := singularity.New(config)
-	onDemandTypeReq := singularity.NewOnDemandRequest()
+	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
 	res, _ := client.CreateRequest(onDemandTypeReq)
 	fmt.Println(res.Body)
 
@@ -33,7 +33,7 @@ func ExampleClient_CreateRequest() {
 	//	"state":"ACTIVE"}"
 	//)
 
-	fmt.Println(res.Res.Status)
+	fmt.Println(res.GoRes.Status)
 
 	// Output:
 	// 200 OK

@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/parnurzeal/gorequest"
+	"gopkg.in/robfig/cron.v2"
 )
 
 // GetRequests retrieve the list of all Singularity requests.
@@ -82,10 +83,10 @@ type ServiceRequest interface {
 // NewOnDemandRequest returns a RequestOnDemand struct. This
 // contains parameters required to create a ON_DEMAND type
 // of Singularity job/task.
-func NewOnDemandRequest() RequestOnDemand {
+func NewOnDemandRequest(id string) RequestOnDemand {
 	return RequestOnDemand{
-		ID:          "lenfree-test",
-		RequestType: "ON_DEMAND",
+		ID:          id,
+		requestType: "ON_DEMAND",
 	}
 }
 
@@ -97,11 +98,11 @@ func (r RequestOnDemand) GetID() string {
 // NewServiceRequest returns a RequestService struct. This
 // contains parameters required to create a SERVICE type
 // of Singularity job/task.
-func NewServiceRequest() RequestService {
+func NewServiceRequest(id string, i int64) RequestService {
 	return RequestService{
-		ID:          "lenfree-test-service",
-		RequestType: "SERVICE",
-		Instances:   1,
+		ID:          id,
+		requestType: "SERVICE",
+		Instances:   i,
 	}
 }
 
@@ -113,13 +114,20 @@ func (r RequestService) GetID() string {
 // NewScheduledRequest returns a RequestScheduled struct. This
 // contains parameters required to create a SCHEDULED type
 // of Singularity job/task.
-func NewScheduledRequest() RequestScheduled {
-	return RequestScheduled{
-		ID:          "lenfree-test-scheduled",
-		RequestType: "SCHEDULED",
-		Schedule:    "* * * * *",
-		Instances:   1,
+func NewScheduledRequest(id, s string, i int64) (RequestScheduled, error) {
+	// Singularity Request expects CRON schedule a string. Hence, we just use cron package
+	// to parse and validate this value.
+	_, err := cron.Parse(s)
+
+	if err != nil {
+		return RequestScheduled{}, fmt.Errorf("Parse %s cron schedule error %v", s, err)
 	}
+	return RequestScheduled{
+		ID:          id,
+		requestType: "SCHEDULED",
+		Schedule:    s,
+		Instances:   i,
+	}, nil
 }
 
 // GetID is a placeholder.
@@ -130,11 +138,11 @@ func (r RequestScheduled) GetID() string {
 // NewWorkerRequest returns a RequestWorker struct. This
 // contains parameters required to create a WORKER type
 // of Singularity job/task.
-func NewWorkerRequest() RequestWorker {
+func NewWorkerRequest(id string, i int64) RequestWorker {
 	return RequestWorker{
-		ID:          "lenfree-test-worker",
-		RequestType: "WORKER",
-		Instances:   1,
+		ID:          id,
+		requestType: "WORKER",
+		Instances:   i,
 	}
 }
 
@@ -146,11 +154,11 @@ func (r RequestWorker) GetID() string {
 // NewRunOnceRequest returns a RequestRunOnce struct. This
 // contains parameters required to create a RUN_ONCE type
 // of Singularity job/task.
-func NewRunOnceRequest() RequestRunOnce {
+func NewRunOnceRequest(id string, i int64) RequestRunOnce {
 	return RequestRunOnce{
-		ID:          "lenfree-test-runonce",
-		RequestType: "RUN_ONCE",
-		Instances:   1,
+		ID:          id,
+		requestType: "RUN_ONCE",
+		Instances:   i,
 	}
 }
 

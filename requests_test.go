@@ -12,7 +12,7 @@ import (
 func TestClient_GetRequests(t *testing.T) {
 	request := SingularityRequest{
 		ID:                  "test-geostreamoffsets-launch-sqs-connector",
-		RequestType:         "RUN_ONCE",
+		requestType:         "RUN_ONCE",
 		NumRetriesOnFailure: 3,
 	}
 	activeDeploy := ActiveDeploy{
@@ -58,4 +58,93 @@ func TestClient_GetRequests(t *testing.T) {
 		// Verify that we don't have pending mocks
 		st.Expect(t, gock.IsDone(), true)
 	*/
+}
+
+func TestNewOnDemandRequest(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedType := "ON_DEMAND"
+	req := NewOnDemandRequest(expectedID)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.requestType != expectedType {
+		t.Errorf("Got %s, expected %s", req.requestType, expectedType)
+	}
+}
+
+func TestNewServicRequest(t *testing.T) {
+	expectedID := "test-service"
+	expectedType := "SERVICE"
+	var n int64 = 3
+	req := NewServiceRequest(expectedID, n)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.Instances != n {
+		t.Errorf("Got %v, expected %v", req.Instances, n)
+	}
+	if req.requestType != expectedType {
+		t.Errorf("Got %s, expected %s", req.requestType, expectedType)
+	}
+}
+
+func TestNewScheduledRequest(t *testing.T) {
+	expectedID := "test-scheduled"
+	expectedType := "SCHEDULED"
+	expectedCron := "*/30 * * * *"
+	var n int64 = 3
+	req, _ := NewScheduledRequest(expectedID, expectedCron, n)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.Instances != n {
+		t.Errorf("Got %v, expected %v", req.Instances, n)
+	}
+	if req.requestType != expectedType {
+		t.Errorf("Got %s, expected %s", req.requestType, expectedType)
+	}
+	if req.Schedule != expectedCron || req.Schedule == "" {
+		t.Errorf("Got %v, expected %v", req.Schedule, expectedCron)
+	}
+	invalidCron := "* * * * * * *"
+	reqError, err := NewScheduledRequest(expectedID, invalidCron, n)
+	expectedError := "Parse * * * * * * cron schedule error Expected exactly 5 fields, found 6: * * * * * *"
+	if err == nil {
+		t.Errorf("Got %v, expected %s", err, expectedError)
+	}
+	if reqError.Schedule != "" {
+		t.Errorf("Got %v, expected %s", err, expectedError)
+	}
+}
+
+func TestNewWorkerRequest(t *testing.T) {
+	expectedID := "test-worker"
+	expectedType := "WORKER"
+	var n int64 = 5
+	req := NewWorkerRequest(expectedID, n)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.Instances != n {
+		t.Errorf("Got %v, expected %v", req.Instances, n)
+	}
+	if req.requestType != expectedType {
+		t.Errorf("Got %s, expected %s", req.requestType, expectedType)
+	}
+}
+
+func TestNewRunOnceRequet(t *testing.T) {
+	expectedID := "test-runonce"
+	expectedType := "RUN_ONCE"
+	var n int64 = 2
+	req := NewRunOnceRequest(expectedID, n)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.Instances != n {
+		t.Errorf("Got %v, expected %v", req.Instances, n)
+	}
+	if req.requestType != expectedType {
+		t.Errorf("Got %s, expected %s", req.requestType, expectedType)
+	}
 }
