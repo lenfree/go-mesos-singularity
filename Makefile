@@ -15,7 +15,7 @@ test:
 .PHONY: coverage
 coverage: test
 	go get github.com/axw/gocov/gocov
-	gocov test | gocov report
+	gocov test -tags doc | gocov report
 
 .PHONY: run
 run:
