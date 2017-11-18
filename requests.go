@@ -19,7 +19,7 @@ func (c *Client) GetRequests() (gorequest.Response, Requests, error) {
 		EndStruct(&body)
 
 	if err != nil {
-		return nil, nil, fmt.Errorf("Get Singularity Requests not found: %v", err)
+		return nil, nil, fmt.Errorf("Get Singularity requests not found: %v", err)
 	}
 	return res, body, nil
 }
@@ -32,14 +32,16 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		End()
 
 	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Get Singularity Request not found: %v", err)
+		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
 	}
+
 	var data Task
 	e := json.Unmarshal([]byte(body), &data)
 
 	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity Request delete error: %v", e)
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request get error: %v", e)
 	}
+
 	response := HTTPResponse{
 		GoRes: res,
 		Task:  data,
@@ -49,37 +51,23 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 
 // HTTPResponse contains response and body from a http query.
 type HTTPResponse struct {
-	GoRes    gorequest.Response
-	Body     Request
-	Task     Task
-	Response SingularityRequest
+	GoRes         gorequest.Response
+	Body          Request
+	Task          Task
+	Response      SingularityRequest
+	RequestParent SingularityRequestParent
 }
 
 // CreateRequest accepts ServiceRequest struct and creates a Singularity
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
-func (c *Client) CreateRequest(r ServiceRequest) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
-		Send(r).
-		EndStruct(&body)
-
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity Request error: %v", err)
-	}
-
-	response := HTTPResponse{
-		GoRes: res,
-		Body:  body,
-	}
-	return response, nil
+func CreateRequest(c *Client, r ServiceRequest) (HTTPResponse, error) {
+	return r.create(c)
 }
 
 // ServiceRequest is an interface to different types of Singularity job requestType.
 type ServiceRequest interface {
-	SetSkipHealthchecks(bool)
-	SetTaskExecutionLimit(int)
-	SetTaskPriorityLevel(int)
+	create(*Client) (HTTPResponse, error)
 }
 
 // NewOnDemandRequest accepts a string id and int number of instances.
@@ -92,39 +80,23 @@ func NewOnDemandRequest(id string) *RequestOnDemand {
 	}
 }
 
-// GetID returns ID of a Singularity Request.
-func (r *RequestOnDemand) GetID() string {
-	return r.ID
-}
+// Create accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *RequestOnDemand) create(c *Client) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+		Send(r).
+		EndStruct(&body)
 
-// Retries accepts an int and set numRetriesOnFailure
-// for this request.
-func (r *RequestOnDemand) Retries(i int64) {
-	r.NumRetriesOnFailure = i
-}
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+	}
 
-// SetSkipHealthchecks accepts a bool and enable/disable
-// skipHealthchecks for this request.
-func (r *RequestOnDemand) SetSkipHealthchecks(s bool) {
-	r.SkipHealthchecks = s
-}
-
-// SetTaskExecutionLimit accepts an int and set taskExecutionTimeLimitMills
-// for this request.
-func (r *RequestOnDemand) SetTaskExecutionLimit(i int) {
-	r.TaskExecutionTimeLimitMillis = i
-}
-
-// SetTaskPriorityLevel accepts an int and set taskPriorityLevel
-// for this request.
-func (r *RequestOnDemand) SetTaskPriorityLevel(i int) {
-	r.TaskPriorityLevel = i
-}
-
-// SetBounceAfterScale accepts a bool and set bounceAfterScale
-// for this request.
-func (r *RequestOnDemand) SetBounceAfterScale(b bool) {
-	r.BounceAfterScale = b
+	return HTTPResponse{
+		GoRes: res,
+		Body:  body,
+	}, nil
 }
 
 // NewServiceRequest accepts a string id and int number of instances.
@@ -138,45 +110,23 @@ func NewServiceRequest(id string, i int64) *RequestService {
 	}
 }
 
-// SetInstances accepts an int64 and and set number of instances
-// for this request.
-func (r *RequestService) SetInstances(i int64) {
-	r.Instances = i
-}
+// Create accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *RequestService) create(c *Client) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+		Send(r).
+		EndStruct(&body)
 
-// SetLoadBalanced accepts a bool and set whether to
-// load balance this request or not.
-func (r *RequestService) SetLoadBalanced(b bool) {
-	r.LoadBalanced = b
-}
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+	}
 
-// SetSkipHealthchecks accepts a bool and enable/disable
-// skipHealthchecks for this request.
-func (r *RequestService) SetSkipHealthchecks(s bool) {
-	r.SkipHealthchecks = s
-}
-
-// SetTaskExecutionLimit accepts an int and set taskExecutionTimeLimitMills
-// for this request.
-func (r *RequestService) SetTaskExecutionLimit(i int) {
-	r.TaskExecutionTimeLimitMillis = i
-}
-
-// SetTaskPriorityLevel accepts an int and set taskPriorityLevel
-// for this request.
-func (r *RequestService) SetTaskPriorityLevel(i int) {
-	r.TaskPriorityLevel = i
-}
-
-// SetBounceAfterScale accepts a bool and set bounceAfterScale
-// for this request.
-func (r *RequestService) SetBounceAfterScale(b bool) {
-	r.BounceAfterScale = b
-}
-
-// GetID returns ID of a Singularity Request.
-func (r RequestService) GetID() string {
-	return r.ID
+	return HTTPResponse{
+		GoRes: res,
+		Body:  body,
+	}, nil
 }
 
 // NewScheduledRequest accepts a string id, cron schedule format as string
@@ -197,45 +147,37 @@ func NewScheduledRequest(id, s string) (*RequestScheduled, error) {
 	}, nil
 }
 
-// SetLoadBalanced accepts a bool and set whether to
-// load balance this request or not.
-func (r *RequestScheduled) SetLoadBalanced(b bool) {
-	r.LoadBalanced = b
-}
-
-// SetSkipHealthchecks accepts a bool and enable/disable
-// skipHealthchecks for this request.
-func (r *RequestScheduled) SetSkipHealthchecks(s bool) {
-	r.SkipHealthchecks = s
-}
-
-// SetTaskExecutionLimit accepts an int and set taskExecutionTimeLimitMills
-// for this request.
-func (r *RequestScheduled) SetTaskExecutionLimit(i int) {
-	r.TaskExecutionTimeLimitMillis = i
-}
-
-// SetTaskPriorityLevel accepts an int and set taskPriorityLevel
-// for this request.
-func (r *RequestScheduled) SetTaskPriorityLevel(i int) {
-	r.TaskPriorityLevel = i
-}
-
-// SetBounceAfterScale accepts a bool and set bounceAfterScale
-// for this request.
-func (r *RequestScheduled) SetBounceAfterScale(b bool) {
-	r.BounceAfterScale = b
-}
-
 // SetCronSchedule accepts a cron schedule format as string
 // and set shedule for this request.
-func (r *RequestScheduled) SetCronSchedule(s string) {
+func (r *RequestScheduled) SetCronSchedule(s string) error {
+	// Singularity Request expects CRON schedule a string. Hence, we just use cron package
+	// to parse and validate this value.
+	_, err := cron.Parse(s)
+
+	if err != nil {
+		return fmt.Errorf("Parse %s cron schedule error %v", s, err)
+	}
 	r.Schedule = s
+	return nil
 }
 
-// GetID is a placeholder.
-func (r RequestScheduled) GetID() string {
-	return r.ID
+// Create accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *RequestScheduled) create(c *Client) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+		Send(r).
+		EndStruct(&body)
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+	}
+
+	return HTTPResponse{
+		GoRes: res,
+		Body:  body,
+	}, nil
 }
 
 // NewWorkerRequest accepts a string id and int number of instances.
@@ -249,45 +191,23 @@ func NewWorkerRequest(id string, i int64) *RequestWorker {
 	}
 }
 
-// SetInstances accepts an int64 and and set number of instances
-// for this request.
-func (r *RequestWorker) SetInstances(i int64) {
-	r.Instances = i
-}
+// Create accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *RequestWorker) create(c *Client) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+		Send(r).
+		EndStruct(&body)
 
-// SetLoadBalanced accepts a bool and set whether to
-// load balance this request or not.
-func (r *RequestWorker) SetLoadBalanced(b bool) {
-	r.LoadBalanced = b
-}
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+	}
 
-// SetSkipHealthchecks accepts a bool and enable/disable
-// skipHealthchecks for this request.
-func (r *RequestWorker) SetSkipHealthchecks(s bool) {
-	r.SkipHealthchecks = s
-}
-
-// SetTaskExecutionLimit accepts an int and set taskExecutionTimeLimitMills
-// for this request.
-func (r *RequestWorker) SetTaskExecutionLimit(i int) {
-	r.TaskExecutionTimeLimitMillis = i
-}
-
-// SetTaskPriorityLevel accepts an int and set taskPriorityLevel
-// for this request.
-func (r *RequestWorker) SetTaskPriorityLevel(i int) {
-	r.TaskPriorityLevel = i
-}
-
-// SetBounceAfterScale accepts a bool and set bounceAfterScale
-// for this request.
-func (r *RequestWorker) SetBounceAfterScale(b bool) {
-	r.BounceAfterScale = b
-}
-
-// GetID returns ID of a Singularity Request.
-func (r RequestWorker) GetID() string {
-	return r.ID
+	return HTTPResponse{
+		GoRes: res,
+		Body:  body,
+	}, nil
 }
 
 // NewRunOnceRequest accepts a string id and int number of instances.
@@ -301,45 +221,62 @@ func NewRunOnceRequest(id string, i int64) *RequestRunOnce {
 	}
 }
 
-// GetID is a placeholder.
-func (r RequestRunOnce) GetID() string {
-	return r.ID
+// GetID is a placeho
+// Create accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *RequestRunOnce) create(c *Client) (HTTPResponse, error) {
+	var body Request
+	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+		Send(r).
+		EndStruct(&body)
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
+	}
+
+	return HTTPResponse{
+		GoRes: res,
+		Body:  body,
+	}, nil
 }
 
-// SetInstances accepts an int64 and and set number of instances
-// for this request.
-func (r *RequestRunOnce) SetInstances(i int64) {
-	r.Instances = i
+// DeleteHTTPRequest contain id string and SingularityDeployRequest required
+// parameter to delete a existing request.
+type DeleteHTTPRequest struct {
+	id string
+	SingularityDeleteRequest
 }
 
-// SetSkipHealthchecks accepts a bool and enable/disable
-// skipHealthchecks for this request.
-func (r *RequestRunOnce) SetSkipHealthchecks(s bool) {
-	r.SkipHealthchecks = s
+// ServiceDeleteRequest is an interface that accepts id string
+// and *Client.
+type ServiceDeleteRequest interface {
+	deleteRequestByID(*Client)
 }
 
-// SetTaskExecutionLimit accepts an int and set taskExecutionTimeLimitMills
-// for this request.
-func (r *RequestRunOnce) SetTaskExecutionLimit(i int) {
-	r.TaskExecutionTimeLimitMillis = i
+// NewDeleteRequest accepts a request id string, a bool to deletefromloadbalancer,
+// string message and action id to associate with for metadata purposes.
+func NewDeleteRequest(id, m, a string, b bool) DeleteHTTPRequest {
+	return DeleteHTTPRequest{
+		id: id,
+		SingularityDeleteRequest: SingularityDeleteRequest{
+			DeleteFromLoadBalancer: b,
+			Message:                m,
+			ActionID:               a,
+		},
+	}
 }
 
-// SetTaskPriorityLevel accepts an int and set taskPriorityLevel
-// for this request.
-func (r *RequestRunOnce) SetTaskPriorityLevel(i int) {
-	r.TaskPriorityLevel = i
-}
-
-// SetBounceAfterScale accepts a bool and set bounceAfterScale
-// for this request.
-func (r *RequestRunOnce) SetBounceAfterScale(b bool) {
-	r.BounceAfterScale = b
+// DeleteRequest accepts id as a string and a type DeleteRequest that
+// contains metadata when deleting this Request.
+func DeleteRequest(c *Client, r DeleteHTTPRequest) (HTTPResponse, error) {
+	return r.deleteRequestByID(c)
 }
 
 // DeleteRequestByID accepts id as a string and a type DeleteRequest that
 // contains metadata when deleting this Request.
-func (c *Client) DeleteRequestByID(id string, r DeleteRequest) (HTTPResponse, error) {
-	res, body, err := c.SuperAgent.Delete(c.Endpoint + "/api/requests/request/" + id).
+func (r DeleteHTTPRequest) deleteRequestByID(c *Client) (HTTPResponse, error) {
+	res, body, err := c.SuperAgent.Delete(c.Endpoint + "/api/requests/request/" + r.id).
 		Send(r).
 		End()
 
@@ -351,12 +288,73 @@ func (c *Client) DeleteRequestByID(id string, r DeleteRequest) (HTTPResponse, er
 
 	e := json.Unmarshal([]byte(body), &data)
 	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity Request delete error: %v", e)
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request delete error: %v", e)
 	}
 
 	response := HTTPResponse{
 		GoRes:    res,
 		Response: data,
+	}
+	return response, nil
+}
+
+// ScaleHTTPRequest contains a request id and a body parameter required to scale
+// in/out of an Singularity request.
+type ScaleHTTPRequest struct {
+	id string
+	SingularityScaleRequest
+}
+
+// ServiceScaleRequest is an interface that accepts a *Client and returns
+// a HTTPResponse type and error.
+type ServiceScaleRequest interface {
+	scale(*Client) (HTTPResponse, error)
+}
+
+// ScaleRequest accepts a *Client and ScaleHTTPRequest type to scale
+// in/out of an existing Singularity request/task.
+func ScaleRequest(c *Client, r ScaleHTTPRequest) (HTTPResponse, error) {
+	return r.scale(c)
+}
+
+// NewRequestScale accepts an id string and a int and returns a pointer to
+// type ScaleRequest which have a minimum required paramters to scale a
+// Singularity request.
+func NewRequestScale(id, m string, i, in int) *ScaleHTTPRequest {
+	return &ScaleHTTPRequest{
+		id: id,
+		SingularityScaleRequest: SingularityScaleRequest{
+			Instances:   i,
+			Message:     m,
+			Incremental: in,
+		},
+	}
+}
+
+// Scale accepts ServiceRequest struct and creates a Singularity
+// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
+// ON_DEMAND, RUN_ONCE.
+func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
+	res, data, err := c.SuperAgent.Put(c.Endpoint + "/api/requests/request/" + r.id + "/scale").
+		Send(r.SingularityScaleRequest).
+		End()
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
+	}
+	if res.StatusCode == 400 {
+		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", string(data))
+	}
+	// TODO: Maybe use interface and type assertion? Since response would have different types
+	// of responses based on request body sent.
+	var body SingularityRequestParent
+	e := json.Unmarshal([]byte(data), &body)
+	if e != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", e)
+	}
+	response := HTTPResponse{
+		GoRes:         res,
+		RequestParent: body,
 	}
 	return response, nil
 }

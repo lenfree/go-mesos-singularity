@@ -16,56 +16,6 @@ func TestOnDemandRequest(t *testing.T) {
 	}
 }
 
-func TestOnDemandRequestRetries(t *testing.T) {
-	expectedID := "test-ondemand"
-	var expectedRetries int64 = 10
-	req := NewOnDemandRequest(expectedID)
-	req.Retries(expectedRetries)
-	if req.NumRetriesOnFailure != expectedRetries {
-		t.Errorf("Got %v, expected %v", req.NumRetriesOnFailure, expectedRetries)
-	}
-}
-
-func TestOnDemandSkipHealthChecks(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedSkipHealthCheck := true
-	req := NewOnDemandRequest(expectedID)
-	req.SetSkipHealthchecks(expectedSkipHealthCheck)
-	if req.SkipHealthchecks != expectedSkipHealthCheck {
-		t.Errorf("Got %v, expected %v", req.NumRetriesOnFailure, expectedSkipHealthCheck)
-	}
-}
-
-func TestOnDemandSetTaskExecutionLimit(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedTimeLimit := 500
-	req := NewOnDemandRequest(expectedID)
-	req.SetTaskExecutionLimit(expectedTimeLimit)
-	if req.TaskExecutionTimeLimitMillis != expectedTimeLimit {
-		t.Errorf("Got %v, expected %v", req.TaskExecutionTimeLimitMillis, expectedTimeLimit)
-	}
-}
-
-func TestOnDemandSetTaskPriorityLevel(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedPriorityLevel := 3
-	req := NewOnDemandRequest(expectedID)
-	req.SetTaskPriorityLevel(expectedPriorityLevel)
-	if req.TaskPriorityLevel != expectedPriorityLevel {
-		t.Errorf("Got %v, expected %v", req.TaskPriorityLevel, expectedPriorityLevel)
-	}
-}
-
-func TestOnDemandSetBounceAfterScale(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedBool := true
-	req := NewOnDemandRequest(expectedID)
-	req.SetBounceAfterScale(expectedBool)
-	if req.BounceAfterScale != expectedBool {
-		t.Errorf("Got %v, expected %v", req.BounceAfterScale, expectedBool)
-	}
-}
-
 func TestNewServiceRequest(t *testing.T) {
 	expectedID := "test-service"
 	expectedType := "SERVICE"
@@ -79,26 +29,6 @@ func TestNewServiceRequest(t *testing.T) {
 	}
 	if req.RequestType != expectedType {
 		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
-	}
-}
-
-func TestServiceRequestInstances(t *testing.T) {
-	expectedID := "test-service"
-	var expectedInstances int64 = 25
-	req := NewServiceRequest(expectedID, expectedInstances)
-	req.SetInstances(expectedInstances)
-	if req.Instances != expectedInstances {
-		t.Errorf("Got %v, expected %v", req.Instances, expectedInstances)
-	}
-}
-func TestServiceSetLoadBalanced(t *testing.T) {
-	expectedID := "test-service"
-	expectedBool := true
-	var expectedInstances int64 = 25
-	req := NewServiceRequest(expectedID, expectedInstances)
-	req.SetLoadBalanced(true)
-	if req.LoadBalanced != expectedBool {
-		t.Errorf("Got %v, expected %v", req.LoadBalanced, expectedBool)
 	}
 }
 
@@ -145,7 +75,7 @@ func TestNewWorkerRequest(t *testing.T) {
 	}
 }
 
-func TestNewRunOnceRequet(t *testing.T) {
+func TestNewRunOnceRequest(t *testing.T) {
 	expectedID := "test-runonce"
 	expectedType := "RUN_ONCE"
 	var n int64 = 2
@@ -158,6 +88,18 @@ func TestNewRunOnceRequet(t *testing.T) {
 	}
 	if req.RequestType != expectedType {
 		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+	}
+}
+
+func TestNewRequestScale(t *testing.T) {
+	expectedID := "scale-id-test"
+	expectedInstances := 3
+	req := NewRequestScale(expectedID, expectedInstances)
+	if req.ID != expectedID {
+		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	}
+	if req.Instances != expectedInstances {
+		t.Errorf("Got %v, expected %v ", req.Instances, expectedInstances)
 	}
 }
 

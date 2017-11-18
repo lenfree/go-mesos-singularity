@@ -4,17 +4,19 @@ package singularity_test
 
 import (
 	"fmt"
+	"os"
 
 	singularity "github.com/lenfree/go-singularity"
 )
 
-func ExampleClient_CreateRequest() {
+func ExampleCreateRequest() {
 	config := singularity.Config{
 		Host: "localhost/singularity",
 	}
 	client := singularity.New(config)
 	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
-	res, _ := client.CreateRequest(onDemandTypeReq)
+	res, _ := singularity.CreateRequest(client, onDemandTypeReq)
+	fmt.Println(res.GoRes.Status)
 	fmt.Println(res.Body)
 
 	// Output:
@@ -34,9 +36,6 @@ func ExampleClient_CreateRequest() {
 	//	},
 	//	"state":"ACTIVE"}"
 	//)
-
-	fmt.Println(res.GoRes.Status)
-
 	// Output:
 	// 200 OK
 }
@@ -55,16 +54,76 @@ func ExampleClient_GetRequestByID() {
 	// golang:latest
 }
 
-func ExampleClient_DeleteRequestByID() {
+func ExampleDeleteRequest() {
 	config := singularity.Config{
 		Host: "localhost/singularity",
 	}
 	client := singularity.New(config)
-
-	d := singularity.DeleteRequest{}
-	r, _ := client.DeleteRequestByID("lenfree-test-worker", d)
+	d := singularity.NewDeleteRequest("lenfree-test-run-once", "test delete", "", false)
+	r, _ := singularity.DeleteRequest(client, d)
 	fmt.Println(r.Response.ID)
 
 	// Output:
-	// lenfree-test-worker
+	// lenfree-test-run-once
+}
+
+func ExampleScaleRequest() {
+	config := singularity.Config{
+		Host: "singularity.staging.mayhem.arbor.net/singularity",
+	}
+	client := singularity.New(config)
+	s := singularity.NewRequestScale("lenfree-test-run-once", 3)
+	r, e := singularity.ScaleRequest(client, *s)
+	if e != nil {
+		fmt.Println(e)
+		os.Exit(1)
+	}
+	fmt.Printf("%#v\n", r.RequestParent.SingularityRequest)
+	fmt.Printf("expiring: %#v\n", r.RequestParent.SingularityExpiringScale)
+
+	//state: singularity.SingularityRequest{
+	//	ID:"lenfree-test-run-once",
+	//	Instances:3,
+	//	NumRetriesOnFailure:0,
+	//	QuartzSchedule:"",
+	//	RequestType:"RUN_ONCE",
+	//	Schedule:"",
+	//	ScheduleType:"",
+	//	HideEvenNumberAcrossRacksHint:false,
+	//	TaskExecutionTimeLimitMillis:0,
+	//	TaskLogErrorRegexCaseSensitive:false,
+	//	SkipHealthchecks:false,
+	//	WaitAtLeastMillisAfterTaskFinishesForReschedule:0,
+	//	TaskPriorityLevel:0,
+	//	RackAffinity:[]string(nil),
+	//	MaxTasksPerOffer:0,
+	//	BounceAfterScale:false,
+	//	RackSensitive:false,
+	//	AllowedSlaveAttributes:map[string]string(nil),
+	//	Owners:[]string(nil),
+	//	RequiredRole:"",
+	//	ScheduledExpectedRuntimeMillis:0,
+	//	RequiredSlaveAttributes:map[string]string(nil),
+	//	LoadBalanced:false,
+	//	KillOldNonLongRunningTasksAfterMillis:0,
+	//	ScheduleTimeZone:"",
+	//	AllowBounceToSameHost:false,
+	//	TaskLogErrorRegex:""
+	//}
+	//expiring: singularity.SingularityExpiringScale{
+	//	RevertToInstances:2,
+	//	User:"",
+	//	RequestID:"lenfree-test-run-once",
+	//	Bounce:false,
+	//	StartMillis:1511057602985,
+	//	ActionID:"",
+	//	DurationMillis:0,
+	//	SingularityExpiringAPIRequestObject:singularity.SingularityExpiringAPIRequestObject{
+	//		ActionID:"",
+	//		DurationMillis:0,
+	//		Instances:3,
+	//		Message:"",
+	//		SkipHealthchecks:false
+	//		}
+	//	}
 }

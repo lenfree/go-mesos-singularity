@@ -5,7 +5,7 @@ go-singularity
 
 [godocs]: https://godoc.org/github.com/lenfree/go-mesos-singularity
 
-A Mesos hubspot/Singularity package written in Go. Since I couldn't
+A Go binding for Mesos hubspot/Singularity binding. Since I couldn't
 manage to find one, hence, write a new one. One of the intention of
 having this package is so I could write a Terraform provider to
 interface with this.
