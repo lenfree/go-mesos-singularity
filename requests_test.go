@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestNewOnDemandRequest(t *testing.T) {
+func TestOnDemandRequest(t *testing.T) {
 	expectedID := "test-ondemand"
 	expectedType := "ON_DEMAND"
 	req := NewOnDemandRequest(expectedID)
@@ -13,6 +13,65 @@ func TestNewOnDemandRequest(t *testing.T) {
 	}
 	if req.RequestType != expectedType {
 		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+	}
+}
+
+func TestOnDemandRequestRetries(t *testing.T) {
+	expectedID := "test-ondemand"
+	var expectedRetries int64 = 10
+	req := NewOnDemandRequest(expectedID)
+	req.Retries(expectedRetries)
+	if req.NumRetriesOnFailure != expectedRetries {
+		t.Errorf("Got %v, expected %v", req.NumRetriesOnFailure, expectedRetries)
+	}
+}
+
+func TestOnDemandSkipHealthChecks(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedSkipHealthCheck := true
+	req := NewOnDemandRequest(expectedID)
+	req.SetSkipHealthchecks(expectedSkipHealthCheck)
+	if req.SkipHealthchecks != expectedSkipHealthCheck {
+		t.Errorf("Got %v, expected %v", req.NumRetriesOnFailure, expectedSkipHealthCheck)
+	}
+}
+
+func TestOnDemandSetTaskExecutionLimit(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedTimeLimit := 500
+	req := NewOnDemandRequest(expectedID)
+	req.SetTaskExecutionLimit(expectedTimeLimit)
+	if req.TaskExecutionTimeLimitMillis != expectedTimeLimit {
+		t.Errorf("Got %v, expected %v", req.TaskExecutionTimeLimitMillis, expectedTimeLimit)
+	}
+}
+
+func TestOnDemandSetTaskPriorityLevel(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedPriorityLevel := 3
+	req := NewOnDemandRequest(expectedID)
+	req.SetTaskPriorityLevel(expectedPriorityLevel)
+	if req.TaskPriorityLevel != expectedPriorityLevel {
+		t.Errorf("Got %v, expected %v", req.TaskPriorityLevel, expectedPriorityLevel)
+	}
+}
+
+func TestOnDemandSetBounceAfterScale(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedBool := true
+	req := NewOnDemandRequest(expectedID)
+	req.SetBounceAfterScale(expectedBool)
+	if req.BounceAfterScale != expectedBool {
+		t.Errorf("Got %v, expected %v", req.BounceAfterScale, expectedBool)
+	}
+}
+func TestNewOnDemandSetLoadBalanced(t *testing.T) {
+	expectedID := "test-ondemand"
+	expectedBool := true
+	req := NewOnDemandRequest(expectedID)
+	req.SetLoadBalanced(expectedBool)
+	if req.LoadBalanced != expectedBool {
+		t.Errorf("Got %v, expected %v", req.LoadBalanced, expectedBool)
 	}
 }
 
@@ -29,6 +88,16 @@ func TestNewServicRequest(t *testing.T) {
 	}
 	if req.RequestType != expectedType {
 		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+	}
+}
+
+func TestServiceRequestInstances(t *testing.T) {
+	expectedID := "test-service"
+	var expectedInstances int64 = 25
+	req := NewServiceRequest(expectedID, expectedInstances)
+	req.SetInstances(expectedInstances)
+	if req.Instances != expectedInstances {
+		t.Errorf("Got %v, expected %v", req.Instances, expectedInstances)
 	}
 }
 

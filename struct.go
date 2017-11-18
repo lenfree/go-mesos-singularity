@@ -172,7 +172,6 @@ type RequestOnDemand struct {
 // Scheduled.
 type RequestScheduled struct {
 	ID                                              string            `json:"id"`
-	Instances                                       int64             `json:"instances"`
 	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
 	RequestType                                     string            `json:"requestType"`
 	Schedule                                        string            `json:"schedule"`
