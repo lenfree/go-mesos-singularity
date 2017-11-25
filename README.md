@@ -2,6 +2,7 @@ go-singularity
 --------------
 
 [![Go Documentation](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)][godocs]
+[![Build status](https://circleci.com/gh/lenfree/go-mesos-singularity.svg?style=shield&circle-token=:circle-token)](https://circleci.com/gh/lenfree/go-mesos-singularity)
 
 [godocs]: https://godoc.org/github.com/lenfree/go-mesos-singularity
 
