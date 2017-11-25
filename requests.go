@@ -69,7 +69,6 @@ func CreateRequest(c *Client, r ServiceRequest) (HTTPResponse, error) {
 // ServiceRequest is an interface to different types of Singularity job requestType.
 type ServiceRequest interface {
 	create(*Client) (HTTPResponse, error)
-	get(*Client) HTTPResponse
 }
 
 // NewOnDemandRequest accepts a string id and int number of instances.
