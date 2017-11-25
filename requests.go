@@ -85,7 +85,11 @@ func NewOnDemandRequest(id string) *RequestOnDemand {
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestOnDemand) create(c *Client) (HTTPResponse, error) {
 	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		EndStruct(&body)
 
@@ -115,7 +119,11 @@ func NewServiceRequest(id string, i int64) *RequestService {
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestService) create(c *Client) (HTTPResponse, error) {
 	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		EndStruct(&body)
 
@@ -166,7 +174,11 @@ func (r *RequestScheduled) SetCronSchedule(s string) error {
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestScheduled) create(c *Client) (HTTPResponse, error) {
 	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		EndStruct(&body)
 
@@ -196,7 +208,11 @@ func NewWorkerRequest(id string, i int64) *RequestWorker {
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestWorker) create(c *Client) (HTTPResponse, error) {
 	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		EndStruct(&body)
 
@@ -227,7 +243,11 @@ func NewRunOnceRequest(id string, i int64) *RequestRunOnce {
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestRunOnce) create(c *Client) (HTTPResponse, error) {
 	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint + "/api/requests").
+	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		EndStruct(&body)
 
@@ -270,13 +290,18 @@ func NewDeleteRequest(id, m, a string, b bool) DeleteHTTPRequest {
 // DeleteRequest accepts id as a string and a type DeleteRequest that
 // contains metadata when deleting this Request.
 func DeleteRequest(c *Client, r DeleteHTTPRequest) (HTTPResponse, error) {
-	return r.deleteRequestByID(c)
+	return r.delete(c)
 }
 
-// DeleteRequestByID accepts id as a string and a type DeleteRequest that
-// contains metadata when deleting this Request.
-func (r DeleteHTTPRequest) deleteRequestByID(c *Client) (HTTPResponse, error) {
-	res, body, err := c.SuperAgent.Delete(c.Endpoint + "/api/requests/request/" + r.id).
+// DeleteRequest accepts id as a string and a type DeleteRequest that
+// contains metadata when deleting this Request. This also deletes any
+// deploy attach to this requestID.
+func (r DeleteHTTPRequest) delete(c *Client) (HTTPResponse, error) {
+	res, body, err := c.SuperAgent.Delete(c.Endpoint+"/api/requests/request/"+r.id).
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r).
 		End()
 
@@ -335,7 +360,11 @@ func NewRequestScale(id, m string, i, in int) *ScaleHTTPRequest {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
-	res, data, err := c.SuperAgent.Put(c.Endpoint + "/api/requests/request/" + r.id + "/scale").
+	res, data, err := c.SuperAgent.Put(c.Endpoint+"/api/requests/request/"+r.id+"/scale").
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
 		Send(r.SingularityScaleRequest).
 		End()
 
@@ -355,6 +384,90 @@ func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
 	response := HTTPResponse{
 		GoRes:         res,
 		RequestParent: body,
+	}
+	return response, nil
+}
+
+func NewDeploy(b bool, u SingularityRequest, d SingularityDeploy, m string) *SingularityDeployRequest {
+	return &SingularityDeployRequest{
+		UnpauseOnSuccessfulDeploy: b,
+		SingularityDeploy:         d,
+		SingularityRequest:        u,
+		Message:                   m,
+	}
+}
+
+// Create creates a deploy and attach to a existing request.
+func (r *SingularityDeployRequest) create(c *Client) (HTTPResponse, error) {
+	res, data, err := c.SuperAgent.Post(c.Endpoint+"/api/deploys/").
+		Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusConflict).
+		Send(r).
+		End()
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
+	}
+	if res.StatusCode == 400 {
+		// 400	Deploy object is invalid
+		return HTTPResponse{}, fmt.Errorf("Create Singularity deploy error: %v", string(data))
+	}
+
+	// TODO: Maybe use interface and type assertion? Since response would have different types
+	// of responses based on request body sent.
+	var body SingularityRequestParent
+	e := json.Unmarshal([]byte(data), &body)
+	if e != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", e)
+	}
+	response := HTTPResponse{
+		GoRes:         res,
+		RequestParent: body,
+	}
+	return response, nil
+}
+
+// NewDeleteDeploy accepts a requestID and deployID string and reutnrs
+// DeleteHTTPDeploy struct which have a method delete that cancels
+// a pending deploy matching both requestID and deployID.
+func NewDeleteDeploy(requestID, deployID string) DeleteHTTPDeploy {
+	return DeleteHTTPDeploy{
+		requestID: requestID,
+		deployID:  deployID,
+	}
+}
+
+// DeleteHTTPDeploy have a struct of requestID and deployID to be use
+// to cancel a pending deploy.
+type DeleteHTTPDeploy struct {
+	requestID string `json:"requestId"`
+	deployID  string `json:"deployId"`
+}
+
+// DeleteDeploy accepts a *Client and delete a existing deploy. This cancel a pending deployment
+// (best effort - the deploy may still succeed or fail).
+// https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#delete-apideploysdeploydeployidrequestrequestid
+func (r DeleteHTTPDeploy) delete(c *Client) (HTTPResponse, error) {
+	res, body, err := c.SuperAgent.Delete(c.Endpoint+"/api/deploys/deploy/"+r.deployID+"/request/"+r.requestID).
+		Retry(3, 5*time.Second,
+			http.StatusBadRequest,
+			http.StatusInternalServerError,
+			http.StatusConflict).
+		End()
+
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Delete Singularity deploy  error: %v", err)
+	}
+
+	var data SingularityRequestParent
+
+	e := json.Unmarshal([]byte(body), &data)
+	if e != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity deploy delete error: %v", e)
+	}
+
+	response := HTTPResponse{
+		GoRes:         res,
+		RequestParent: data,
 	}
 	return response, nil
 }

@@ -94,12 +94,42 @@ func TestNewRunOnceRequest(t *testing.T) {
 func TestNewRequestScale(t *testing.T) {
 	expectedID := "scale-id-test"
 	expectedInstances := 3
-	req := NewRequestScale(expectedID, expectedInstances)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+	expectedMessage := "test scale"
+	expectedIncrement := 2
+	req := NewRequestScale(expectedID,
+		expectedMessage,
+		expectedInstances,
+		expectedIncrement)
+	if req.id != expectedID {
+		t.Errorf("Got %s, expected %s", req.id, expectedID)
 	}
-	if req.Instances != expectedInstances {
-		t.Errorf("Got %v, expected %v ", req.Instances, expectedInstances)
+	if req.SingularityScaleRequest.Instances != expectedInstances {
+		t.Errorf("Got %v, expected %v ",
+			req.SingularityScaleRequest.Instances,
+			expectedInstances)
+	}
+	if req.SingularityScaleRequest.Message != expectedMessage {
+		t.Errorf("Got %v, expected %v ",
+			req.SingularityScaleRequest.Message,
+			expectedMessage)
+	}
+	if req.SingularityScaleRequest.Incremental != expectedIncrement {
+		t.Errorf("Got %v, expected %v ",
+			req.SingularityScaleRequest.Incremental,
+			expectedIncrement)
+	}
+}
+
+func TestNewDeploy(t *testing.T) {
+	expectedRequestID := "test-id-1"
+	expectedDeployID := "4"
+
+	req := NewDeleteDeploy(expectedRequestID, expectedDeployID)
+	if req.deployID != expectedDeployID {
+		t.Errorf("Got %v, expected %v ", req.deployID, expectedDeployID)
+	}
+	if req.requestID != expectedRequestID {
+		t.Errorf("Got %v, expected %v ", req.requestID, expectedRequestID)
 	}
 }
 
