@@ -52,6 +52,16 @@ type Request struct {
 	SingularityRequest `json:"request"`
 	RequestDeployState `json:"requestDeployState"`
 	State              string `json:"state"`
+	ActiveDeploy       struct {
+		Arguments                  []string `json:"arguments"`
+		Command                    string   `json:"command"`
+		ContainerInfo              `json:"containerInfo"`
+		Env                        map[string]string `json:"env"`
+		ID                         string            `json:"id"`
+		RequestID                  string            `json:"requestId"`
+		SingularityDeployResources `json:"resources"`
+		Uris                       []string `json:"uris"`
+	} `json:"activeDeploy"`
 }
 
 // Requests is a slice of Request.
@@ -103,35 +113,6 @@ type Task struct {
 	} `json:"requestDeployState"`
 	State              string `json:"state"`
 	SingularityRequest `json:"request"`
-}
-
-// TaskNoDeploy contains JSON response of /api/requests/request/ID without
-// a deploy attached.
-type TaskNoDeploy struct {
-	ActiveDeploy struct {
-		Arguments                  []string `json:"arguments"`
-		Command                    string   `json:"command"`
-		ContainerInfo              `json:"containerInfo"`
-		Env                        map[string]string `json:"env"`
-		ID                         string            `json:"id"`
-		RequestID                  string            `json:"requestId"`
-		SingularityDeployResources `json:"resources"`
-		Uris                       []string `json:"uris"`
-	} `json:"activeDeploy"`
-	RequestDeployState struct {
-		ActiveDeploy struct {
-			DeployID  string `json:"deployId"`
-			RequestID string `json:"requestId"`
-			Timestamp int64  `json:"timestamp"`
-		} `json:"activeDeploy"`
-		RequestID string `json:"requestId"`
-	} `json:"requestDeployState"`
-	State   string `json:"state"`
-	Request struct {
-		ID                  string `json:"id"`
-		NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
-		RequestType         string `json:"requestType"`
-	} `json:"request"`
 }
 
 // SingularityDeployResources includes information about required/configured

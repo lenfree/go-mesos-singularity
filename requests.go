@@ -37,7 +37,7 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 	}
 
 	// Sometimes we don't have a deploy attach to a request. Hence, we do to match.
-	var data interface{}
+	var data Request
 	e := json.Unmarshal([]byte(body), &data)
 
 	if e != nil {
@@ -45,7 +45,7 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 	}
 	return HTTPResponse{
 		GoRes: res,
-		Task:  data,
+		Body:  data,
 	}, nil
 }
 
