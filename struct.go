@@ -84,24 +84,15 @@ type ContainerInfo struct {
 // Task contains JSON response of /api/requests/request/ID.
 type Task struct {
 	ActiveDeploy struct {
-		Arguments     []string `json:"arguments"`
-		Command       string   `json:"command"`
-		ContainerInfo `json:"containerInfo"`
-		Env           struct {
-			ClubID             string      `json:"CLUB_ID"`
-			ClubName           string      `json:"CLUB_NAME"`
-			DockerImageVersion interface{} `json:"DOCKER_IMAGE_VERSION"`
-		} `json:"env"`
-		ID                         string `json:"id"`
-		RequestID                  string `json:"requestId"`
+		Arguments                  []string `json:"arguments"`
+		Command                    string   `json:"command"`
+		ContainerInfo              `json:"containerInfo"`
+		Env                        map[string]string `json:"env"`
+		ID                         string            `json:"id"`
+		RequestID                  string            `json:"requestId"`
 		SingularityDeployResources `json:"resources"`
 		Uris                       []string `json:"uris"`
 	} `json:"activeDeploy"`
-	Request struct {
-		ID                  string `json:"id"`
-		NumRetriesOnFailure int64  `json:"numRetriesOnFailure"`
-		RequestType         string `json:"requestType"`
-	} `json:"request"`
 	RequestDeployState struct {
 		ActiveDeploy struct {
 			DeployID  string `json:"deployId"`
@@ -110,7 +101,8 @@ type Task struct {
 		} `json:"activeDeploy"`
 		RequestID string `json:"requestId"`
 	} `json:"requestDeployState"`
-	State string `json:"state"`
+	State              string `json:"state"`
+	SingularityRequest `json:"request"`
 }
 
 // SingularityDeployResources includes information about required/configured
