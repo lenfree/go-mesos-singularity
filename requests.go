@@ -34,16 +34,11 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
 	}
 
-	// Sometimes we don't have a deploy attach to a request. Hence, we do to match.
-	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
-
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Parse Singularity request get error: %v", err)
 	}
 	return HTTPResponse{
 		RestyResponse: res,
-		Body:          data,
 	}, nil
 }
 
