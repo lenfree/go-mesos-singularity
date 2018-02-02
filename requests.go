@@ -34,9 +34,6 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
 	}
 
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request get error: %v", err)
-	}
 	return HTTPResponse{
 		RestyResponse: res,
 	}, nil
