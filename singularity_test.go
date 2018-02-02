@@ -4,54 +4,113 @@ import (
 	"testing"
 )
 
-func TestNew(t *testing.T) {
-	host := "localhost"
-	c := Config{
-		Host: host,
-	}
-	client := New(c)
-	expected := "http://" + host
-	if client.Endpoint != expected {
-		t.Errorf("Got %s, expected %s", client.Endpoint, expected)
-	}
+func TestBuild(t *testing.T) {
 
-	port := 8080
-	config := Config{
-		Host: host,
+	port := 80
+	retry := 2
+	host := "localhost"
+
+	expected := config{
+		Host:  "localhost",
+		Port:  port,
+		Retry: retry,
+	}
+	c := NewConfig().SetHost(host).SetPort(port).SetRetry(retry).Build()
+	if c != expected {
+		t.Errorf("Got %v, expected %v", c, expected)
+	}
+}
+
+func TestSetPort(t *testing.T) {
+	port := 80
+
+	expected := config{
 		Port: port,
 	}
-	clientConfig := New(config)
-	expectedWPort := "http://" + host + ":8080"
-	if clientConfig.Endpoint != expectedWPort {
-		t.Errorf("Got %s, expected %s", clientConfig.Endpoint, expectedWPort)
+
+	c := config{
+		Port: port,
+	}
+
+	r := NewConfig().SetPort(port).Build()
+
+	if r != expected {
+		t.Errorf("Got %v, expected %v", c, expected)
+	}
+}
+
+func TestSetHost(t *testing.T) {
+	host := "localhost"
+
+	expected := config{
+		Host: host,
+	}
+
+	c := config{
+		Host: host,
+	}
+
+	r := NewConfig().SetHost(host).Build()
+
+	if r != expected {
+		t.Errorf("Got %v, expected %v", c, expected)
+	}
+}
+
+func TestSetRetry(t *testing.T) {
+	retry := 2
+
+	expected := config{
+		Retry: retry,
+	}
+
+	c := config{
+		Retry: retry,
+	}
+
+	r := NewConfig().SetRetry(retry).Build()
+
+	if r != expected {
+		t.Errorf("Got %v, expected %v", c, expected)
+	}
+}
+
+func TestNewClient(t *testing.T) {
+
+	c := NewConfig().SetHost("localhost").SetPort(80).SetRetry(2).Build()
+
+	expected := "http://localhost"
+	client := NewClient(c)
+	if client.Endpoint != expected {
+		t.Errorf("Got %v, expected %v", c, expected)
 	}
 }
 
 func TestEndpoint(t *testing.T) {
-	config := Config{
+	c := config{
 		Host: "localhost",
 	}
-	host := endpoint(&config)
+	host := endpoint(&c)
 	expected := "http://localhost"
 	if host != expected {
 		t.Errorf("Got %s, expected %s", host, expected)
 	}
 
-	configHTTP := Config{
+	cHTTP := config{
 		Host: "localhost",
 		Port: 80,
 	}
-	hostHTTP := endpoint(&configHTTP)
+	hostHTTP := endpoint(&cHTTP)
 	expectedHTTP := "http://localhost"
 	if hostHTTP != expectedHTTP {
 		t.Errorf("Got %s, expected %s", hostHTTP, expectedHTTP)
 	}
 
-	configHTTPS := Config{
+	cHTTPS := config{
 		Host: "localhost",
 		Port: 443,
 	}
-	hostHTTPS := endpoint(&configHTTPS)
+	hostHTTPS := endpoint(&cHTTPS)
 	expectedHTTPS := "https://localhost"
 	if hostHTTPS != expectedHTTPS {
 		t.Errorf("Got %s, expected %s", hostHTTPS, expectedHTTPS)

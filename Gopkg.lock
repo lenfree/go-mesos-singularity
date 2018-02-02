@@ -2,6 +2,18 @@
 
 
 [[projects]]
+  name = "github.com/go-resty/resty"
+  packages = ["."]
+  revision = "00cb083b8cdc8b0fb1e1f5ebe24bbc23e0ff0cf6"
+  version = "v1.2"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/mitchellh/mapstructure"
+  packages = ["."]
+  revision = "b4575eea38cca1123ec2dc90c26529b5c5acfcff"
+
+[[projects]]
   branch = "master"
   name = "github.com/moul/http2curl"
   packages = ["."]
@@ -22,13 +34,31 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
-  packages = ["idna","publicsuffix"]
+  packages = [
+    "idna",
+    "publicsuffix"
+  ]
   revision = "9dfe39835686865bff950a07b394c12a98ddc811"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/text"
-  packages = ["collate","collate/build","internal/colltab","internal/gen","internal/tag","internal/triegen","internal/ucd","language","secure/bidirule","transform","unicode/bidi","unicode/cldr","unicode/norm","unicode/rangetable"]
+  packages = [
+    "collate",
+    "collate/build",
+    "internal/colltab",
+    "internal/gen",
+    "internal/tag",
+    "internal/triegen",
+    "internal/ucd",
+    "language",
+    "secure/bidirule",
+    "transform",
+    "unicode/bidi",
+    "unicode/cldr",
+    "unicode/norm",
+    "unicode/rangetable"
+  ]
   revision = "88f656faf3f37f690df1a32515b479415e1a6769"
 
 [[projects]]
@@ -40,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "eb869e3a2074eedfd4201e675a7212a9772c1e8f562a08038c1f9d18e0f52aad"
+  inputs-digest = "e32c99f6b26653ff8c1990a9670dde3cdebe9f82ebffe9749723150ae954a94e"
   solver-name = "gps-cdcl"
   solver-version = 1

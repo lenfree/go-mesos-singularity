@@ -6,19 +6,19 @@ import (
 	"fmt"
 	"os"
 
+	jsoniter "github.com/json-iterator/go"
 	singularity "github.com/lenfree/go-singularity"
-	"github.com/mitchellh/mapstructure"
 )
 
 func ExampleCreateRequest() {
-	config := singularity.Config{
-		Host: "localhost/singularity",
-	}
-	client := singularity.New(config)
+	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	client := singularity.NewClient(c)
 	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
 	res, _ := singularity.CreateRequest(client, onDemandTypeReq)
 	fmt.Println(res.GoRes.Status)
-	fmt.Println(res.Body)
+	var json = jsoniter.ConfigCompatibleWithStandardLibrary
+	data, _ := json.Marshal(res.Body)
+	fmt.Println(string(data))
 
 	// Output:
 	// {"request":
@@ -42,32 +42,22 @@ func ExampleCreateRequest() {
 }
 
 func ExampleClient_GetRequestByID() {
-	config := singularity.Config{
-		Host: "localhost/singularity",
-	}
-	client := singularity.New(config)
+	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	client := singularity.NewClient(c)
 	_, r, _ := client.GetRequests()
 
 	// This requestID have a deploy attach to it. Hence,
 	// it can be decode to type Task.
 	resp, _ := client.GetRequestByID(r[0].ID)
-	val := resp.Task.(map[string]interface{})
-	var result singularity.Task
-	err := mapstructure.Decode(val, &result)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Printf("debug: %+#v\n", result.ActiveDeploy.ContainerInfo.Docker.Image)
+	fmt.Printf("debug: %s\n", resp.Body.ActiveDeploy.ContainerInfo.Docker.Image)
 
 	// Output:
 	// golang:latest
 }
 
 func ExampleDeleteRequest() {
-	config := singularity.Config{
-		Host: "localhost/singularity",
-	}
-	client := singularity.New(config)
+	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	client := singularity.NewClient(c)
 	d := singularity.NewDeleteRequest("lenfree-test-run-once", "test delete", "", false)
 	r, _ := singularity.DeleteRequest(client, d)
 	fmt.Println(r.Response.ID)
@@ -77,11 +67,9 @@ func ExampleDeleteRequest() {
 }
 
 func ExampleScaleRequest() {
-	config := singularity.Config{
-		Host: "singularity.staging.mayhem.arbor.net/singularity",
-	}
-	client := singularity.New(config)
-	s := singularity.NewRequestScale("lenfree-test-run-once", 3)
+	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	client := singularity.NewClient(c)
+	s := singularity.NewRequestScale("lenfree-test-run-once", "scale up to 2 by 1 increment", 2, 1)
 	r, e := singularity.ScaleRequest(client, *s)
 	if e != nil {
 		fmt.Println(e)
