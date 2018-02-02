@@ -11,7 +11,11 @@ import (
 )
 
 func ExampleCreateRequest() {
-	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	c := singularity.NewConfig().
+		SetHost("localhost/singularity").
+		SetPort(80).
+		SetRetry(3).
+		Build()
 	client := singularity.NewClient(c)
 	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
 	res, _ := singularity.CreateRequest(client, onDemandTypeReq)
@@ -42,7 +46,11 @@ func ExampleCreateRequest() {
 }
 
 func ExampleClient_GetRequestByID() {
-	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	c := singularity.NewConfig().
+		SetHost("localhost/singularity").
+		SetPort(80).
+		SetRetry(3).
+		Build()
 	client := singularity.NewClient(c)
 	_, r, _ := client.GetRequests()
 
@@ -56,7 +64,11 @@ func ExampleClient_GetRequestByID() {
 }
 
 func ExampleDeleteRequest() {
-	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	c := singularity.NewConfig().
+		SetHost("localhost/singularity").
+		SetPort(80).
+		SetRetry(3).
+		Build()
 	client := singularity.NewClient(c)
 	d := singularity.NewDeleteRequest("lenfree-test-run-once", "test delete", "", false)
 	r, _ := singularity.DeleteRequest(client, d)
@@ -67,7 +79,11 @@ func ExampleDeleteRequest() {
 }
 
 func ExampleScaleRequest() {
-	c := singularity.NewConfig().SetHost("localhost/singularity").SetPort(80).SetRetry(3).Build()
+	c := singularity.NewConfig().
+		SetHost("localhost/singularity").
+		SetPort(80).
+		SetRetry(3).
+		Build()
 	client := singularity.NewClient(c)
 	s := singularity.NewRequestScale("lenfree-test-run-once", "scale up to 2 by 1 increment", 2, 1)
 	r, e := singularity.ScaleRequest(client, *s)

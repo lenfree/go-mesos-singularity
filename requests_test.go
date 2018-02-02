@@ -53,12 +53,13 @@ func TestNewScheduledRequest(t *testing.T) {
 	}
 
 	invalidCron := "* * * * * * *"
-	expectedError := "Parse * * * * * * cron schedule error Expected exactly 5 fields, found 6: * * * * * *"
+	expectedError := "Parse * * * * * * * cron schedule error Expected 5 or 6 fields, found 7: * * * * * * *"
 	reqError, err := NewScheduledRequest(expectedID, invalidCron, "CRON")
 
-	if err == nil {
+	if err.Error() != expectedError {
 		t.Errorf("Got %v, expected %s", err, expectedError)
 	}
+
 	if reqError.Schedule != "" {
 		t.Errorf("Got %v, expected %s", err, expectedError)
 	}

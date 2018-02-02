@@ -15,7 +15,11 @@ func TestBuild(t *testing.T) {
 		Port:  port,
 		Retry: retry,
 	}
-	c := NewConfig().SetHost(host).SetPort(port).SetRetry(retry).Build()
+	c := NewConfig().
+		SetHost(host).
+		SetPort(port).
+		SetRetry(retry).
+		Build()
 	if c != expected {
 		t.Errorf("Got %v, expected %v", c, expected)
 	}
@@ -32,7 +36,9 @@ func TestSetPort(t *testing.T) {
 		Port: port,
 	}
 
-	r := NewConfig().SetPort(port).Build()
+	r := NewConfig().
+		SetPort(port).
+		Build()
 
 	if r != expected {
 		t.Errorf("Got %v, expected %v", c, expected)
@@ -50,7 +56,9 @@ func TestSetHost(t *testing.T) {
 		Host: host,
 	}
 
-	r := NewConfig().SetHost(host).Build()
+	r := NewConfig().
+		SetHost(host).
+		Build()
 
 	if r != expected {
 		t.Errorf("Got %v, expected %v", c, expected)
@@ -68,7 +76,9 @@ func TestSetRetry(t *testing.T) {
 		Retry: retry,
 	}
 
-	r := NewConfig().SetRetry(retry).Build()
+	r := NewConfig().
+		SetRetry(retry).
+		Build()
 
 	if r != expected {
 		t.Errorf("Got %v, expected %v", c, expected)
