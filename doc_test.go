@@ -15,7 +15,7 @@ func ExampleCreateRequest() {
 	client := singularity.NewClient(c)
 	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
 	res, _ := singularity.CreateRequest(client, onDemandTypeReq)
-	fmt.Println(res.GoRes.Status)
+	fmt.Println(res.RestyResponse.Status())
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, _ := json.Marshal(res.Body)
 	fmt.Println(string(data))

@@ -1,26 +1,24 @@
 package singularity
 
 import (
-	"encoding/json"
 	"fmt"
-	"net/http"
 	"strings"
-	"time"
 
-	"github.com/parnurzeal/gorequest"
+	"github.com/go-resty/resty"
 	cron "gopkg.in/robfig/cron.v2"
 )
 
 // GetRequests retrieve the list of all Singularity requests.
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#endpoint-/api/requests
-func (c *Client) GetRequests() (gorequest.Response, Requests, error) {
+func (c *Client) GetRequests() (*resty.Response, Requests, error) {
 	var body Requests
-	res, _, err := c.SuperAgent.Get(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError).
-		EndStruct(&body)
+	res, err := c.Rest.
+		R().
+		Get(c.Endpoint + "/api/requests")
 
+	err = c.Rest.JSONUnmarshal(res.Body(), body)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Get Singularity requests not found: %v", err)
+		return &resty.Response{}, nil, fmt.Errorf("Get Singularity requests not found: %v", err)
 	}
 	return res, body, nil
 }
@@ -28,9 +26,9 @@ func (c *Client) GetRequests() (gorequest.Response, Requests, error) {
 // GetRequestByID accpets string id and retrieve a specific Singularity Request by ID
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#get-apirequestsrequestrequestid
 func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
-	res, body, err := c.SuperAgent.Get(c.Endpoint+"/api/requests/request"+"/"+id).
-		Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError).
-		End()
+	res, err := c.Rest.
+		R().
+		Get(c.Endpoint + "/api/requests/request" + "/" + id)
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
@@ -38,14 +36,14 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 
 	// Sometimes we don't have a deploy attach to a request. Hence, we do to match.
 	var data Request
-	e := json.Unmarshal([]byte(body), &data)
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
 
-	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request get error: %v", e)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request get error: %v", err)
 	}
 	return HTTPResponse{
-		GoRes: res,
-		Body:  data,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -53,7 +51,7 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 // TODO: Move different response type to use interface{} rather
 // than user defined types.
 type HTTPResponse struct {
-	GoRes         gorequest.Response
+	RestyResponse *resty.Response
 	Body          Request
 	Task          interface{}
 	Response      SingularityRequest
@@ -86,22 +84,22 @@ func NewOnDemandRequest(id string) *RequestOnDemand {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestOnDemand) create(c *Client) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		EndStruct(&body)
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r).
+		Post(c.Endpoint + "/api/requests")
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
 
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
+
 	return HTTPResponse{
-		GoRes: res,
-		Body:  body,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -120,22 +118,21 @@ func NewServiceRequest(id string, i int64) *RequestService {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestService) create(c *Client) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		EndStruct(&body)
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r).
+		Post(c.Endpoint + "/api/requests")
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
 
 	return HTTPResponse{
-		GoRes: res,
-		Body:  body,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -180,22 +177,22 @@ func (r *RequestScheduled) SetCronSchedule(s string) error {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestScheduled) create(c *Client) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		EndStruct(&body)
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r).
+		Post(c.Endpoint + "/api/requests")
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
 
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
+
 	return HTTPResponse{
-		GoRes: res,
-		Body:  body,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -214,22 +211,18 @@ func NewWorkerRequest(id string, i int64) *RequestWorker {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestWorker) create(c *Client) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		EndStruct(&body)
+	res, err := c.Rest.R().SetBody(r).Post(c.Endpoint + "/api/requests")
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
 
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
+
 	return HTTPResponse{
-		GoRes: res,
-		Body:  body,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -249,22 +242,22 @@ func NewRunOnceRequest(id string, i int64) *RequestRunOnce {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *RequestRunOnce) create(c *Client) (HTTPResponse, error) {
-	var body Request
-	res, _, err := c.SuperAgent.Post(c.Endpoint+"/api/requests").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		EndStruct(&body)
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r).
+		Post(c.Endpoint + "/api/requests")
 
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
 	}
 
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
+
 	return HTTPResponse{
-		GoRes: res,
-		Body:  body,
+		RestyResponse: res,
+		Body:          data,
 	}, nil
 }
 
@@ -304,28 +297,23 @@ func DeleteRequest(c *Client, r DeleteHTTPRequest) (HTTPResponse, error) {
 // contains metadata when deleting this Request. This also deletes any
 // deploy attach to this requestID.
 func (r DeleteHTTPRequest) delete(c *Client) (HTTPResponse, error) {
-	res, body, err := c.SuperAgent.Delete(c.Endpoint+"/api/requests/request/"+r.id).
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r).
-		End()
-
+	res, err := c.Rest.
+		R().
+		Delete(c.Endpoint + "/api/requests/request/" + r.id)
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Delete Singularity request error: %v", err)
 	}
 
 	var data SingularityRequest
 
-	e := json.Unmarshal([]byte(body), &data)
-	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request delete error: %v", e)
+	err = c.Rest.JSONUnmarshal(res.Body(), &data)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("parse singularity request delete error: %v", err)
 	}
 
 	response := HTTPResponse{
-		GoRes:    res,
-		Response: data,
+		RestyResponse: res,
+		Response:      data,
 	}
 	return response, nil
 }
@@ -367,30 +355,29 @@ func NewRequestScale(id, m string, i, in int) *ScaleHTTPRequest {
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
-	res, data, err := c.SuperAgent.Put(c.Endpoint+"/api/requests/request/"+r.id+"/scale").
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		Send(r.SingularityScaleRequest).
-		End()
-
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r.SingularityScaleRequest).
+		Put(c.Endpoint + "/api/requests/request/" + r.id + "/scale")
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
 	}
-	if res.StatusCode == 400 {
-		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", string(data))
+
+	if res.StatusCode() == 400 {
+		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", r.SingularityScaleRequest)
 	}
 	// TODO: Maybe use interface and type assertion? Since response would have different types
 	// of responses based on request body sent.
-	var body SingularityRequestParent
-	e := json.Unmarshal([]byte(data), &body)
-	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", e)
+	var data SingularityRequestParent
+	err = c.Rest.JSONUnmarshal(res.Body(), &data)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", err)
 	}
+
 	response := HTTPResponse{
-		GoRes:         res,
-		RequestParent: body,
+		RestyResponse: res,
+		RequestParent: data,
 	}
 	return response, nil
 }
@@ -406,29 +393,30 @@ func NewDeploy(b bool, u SingularityRequest, d SingularityDeploy, m string) *Sin
 
 // Create creates a deploy and attach to a existing request.
 func (r *SingularityDeployRequest) create(c *Client) (HTTPResponse, error) {
-	res, data, err := c.SuperAgent.Post(c.Endpoint+"/api/deploys/").
-		Retry(3, 5*time.Second, http.StatusBadRequest, http.StatusInternalServerError, http.StatusConflict).
-		Send(r).
-		End()
-
+	res, err := c.Rest.
+		R().
+		SetHeader("Content-Type", "application/json").
+		SetBody(r).
+		Post(c.Endpoint + "/api/deploys/")
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
 	}
-	if res.StatusCode == 400 {
+
+	if res.StatusCode() == 400 {
 		// 400	Deploy object is invalid
-		return HTTPResponse{}, fmt.Errorf("Create Singularity deploy error: %v", string(data))
+		return HTTPResponse{}, fmt.Errorf("Create Singularity deploy error: %v", r)
 	}
 
 	// TODO: Maybe use interface and type assertion? Since response would have different types
 	// of responses based on request body sent.
-	var body SingularityRequestParent
-	e := json.Unmarshal([]byte(data), &body)
-	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", e)
+	var data SingularityRequestParent
+	err = c.Rest.JSONUnmarshal(res.Body(), &data)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", err)
 	}
 	response := HTTPResponse{
-		GoRes:         res,
-		RequestParent: body,
+		RestyResponse: res,
+		RequestParent: data,
 	}
 	return response, nil
 }
@@ -454,26 +442,22 @@ type DeleteHTTPDeploy struct {
 // (best effort - the deploy may still succeed or fail).
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#delete-apideploysdeploydeployidrequestrequestid
 func (r DeleteHTTPDeploy) delete(c *Client) (HTTPResponse, error) {
-	res, body, err := c.SuperAgent.Delete(c.Endpoint+"/api/deploys/deploy/"+r.deployID+"/request/"+r.requestID).
-		Retry(3, 5*time.Second,
-			http.StatusBadRequest,
-			http.StatusInternalServerError,
-			http.StatusConflict).
-		End()
-
+	res, err := c.Rest.
+		R().
+		Delete(c.Endpoint + "/api/deploys/deploy/" + r.deployID + "/request/" + r.requestID)
 	if err != nil {
 		return HTTPResponse{}, fmt.Errorf("Delete Singularity deploy  error: %v", err)
 	}
 
 	var data SingularityRequestParent
 
-	e := json.Unmarshal([]byte(body), &data)
+	e := c.Rest.JSONUnmarshal(res.Body(), &data)
 	if e != nil {
 		return HTTPResponse{}, fmt.Errorf("Parse Singularity deploy delete error: %v", e)
 	}
 
 	response := HTTPResponse{
-		GoRes:         res,
+		RestyResponse: res,
 		RequestParent: data,
 	}
 	return response, nil

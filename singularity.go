@@ -5,13 +5,13 @@ package singularity
 import (
 	"strconv"
 
-	"github.com/parnurzeal/gorequest"
+	"github.com/go-resty/resty"
 )
 
 // Client contains Singularity endpoint for http requests
 type Client struct {
-	Endpoint   string
-	SuperAgent gorequest.SuperAgent
+	Endpoint string
+	Rest     *resty.Client
 }
 
 // Config contains Singularity HTTP endpoint and configuration for
@@ -63,10 +63,12 @@ func (co *config) Build() config {
 
 // NewClient returns Singularity HTTP endpoint.
 func NewClient(c config) *Client {
-	a := gorequest.New()
+	r := resty.New().
+		SetRESTMode().
+		SetRetryCount(c.Retry)
 	return &Client{
-		Endpoint:   endpoint(&c),
-		SuperAgent: *a,
+		Endpoint: endpoint(&c),
+		Rest:     r,
 	}
 }
 

@@ -8,10 +8,10 @@
   version = "v1.2"
 
 [[projects]]
-  branch = "master"
-  name = "github.com/mitchellh/mapstructure"
+  name = "github.com/json-iterator/go"
   packages = ["."]
-  revision = "b4575eea38cca1123ec2dc90c26529b5c5acfcff"
+  revision = "28452fcdec4e44348d2af0d91d1e9e38da3a9e0a"
+  version = "1.0.5"
 
 [[projects]]
   branch = "master"
@@ -70,6 +70,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e32c99f6b26653ff8c1990a9670dde3cdebe9f82ebffe9749723150ae954a94e"
+  inputs-digest = "91879277d6c1c55988b1f092c639b79a2a9ccfa534d91c86dbe795674e6c44a2"
   solver-name = "gps-cdcl"
   solver-version = 1
