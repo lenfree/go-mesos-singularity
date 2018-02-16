@@ -11,14 +11,22 @@ import (
 )
 
 func ExampleCreateRequest() {
+
+	const (
+		ON_DEMAND = 1
+		SERVICE   = 2
+		SCHEDULED = 3
+		RUN_ONCE  = 4
+		WORKER    = 5
+	)
+
 	c := singularity.NewConfig().
 		SetHost("localhost/singularity").
 		SetPort(80).
 		SetRetry(3).
 		Build()
 	client := singularity.NewClient(c)
-	onDemandTypeReq := singularity.NewOnDemandRequest("lenfree-test")
-	res, _ := singularity.CreateRequest(client, onDemandTypeReq)
+	res, _ := singularity.NewRequest(ON_DEMAND, "").SetID("lenfree-test").Create(client)
 	fmt.Println(res.RestyResponse.Status())
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	data, _ := json.Marshal(res.Body)

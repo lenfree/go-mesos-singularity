@@ -8,6 +8,51 @@ import (
 	cron "gopkg.in/robfig/cron.v2"
 )
 
+const (
+	ON_DEMAND = 1
+	SERVICE   = 2
+	SCHEDULED = 3
+	RUN_ONCE  = 4
+	WORKER    = 5
+)
+
+// NewRequest accepts 5 types of Singularity reqeuests, a string id
+// and return default values for each type of request with request id.
+func NewRequest(t int, id string) ServiceRequest {
+	switch t {
+	case ON_DEMAND:
+		return &SingularityRequest{
+			RequestType: "ON_DEMAND",
+			ID:          id,
+		}
+	case SERVICE:
+		return &SingularityRequest{
+			RequestType: "SERVICE",
+			Instances:   1,
+			ID:          id,
+		}
+	case SCHEDULED:
+		return &SingularityRequest{
+			RequestType:  "SCHEDULED",
+			ScheduleType: "CRON",
+			ID:           id,
+		}
+	case RUN_ONCE:
+		return &SingularityRequest{
+			RequestType: "RUN_ONCE",
+			Instances:   1,
+			ID:          id,
+		}
+	case WORKER:
+		return &SingularityRequest{
+			RequestType: "WORKER",
+			Instances:   1,
+			ID:          id,
+		}
+	}
+	return nil
+}
+
 // GetRequests retrieve the list of all Singularity requests.
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#endpoint-/api/requests
 func (c *Client) GetRequests() (*resty.Response, Requests, error) {
@@ -50,190 +95,79 @@ type HTTPResponse struct {
 	RequestParent SingularityRequestParent
 }
 
-// CreateRequest accepts ServiceRequest struct and creates a Singularity
+// CreateRequest accepts ServiceRequest struct and Creates a Singularity
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
-func CreateRequest(c *Client, r ServiceRequest) (HTTPResponse, error) {
-	return r.create(c)
-}
+//func CreateRequest(c *Client, r ServiceRequest) (HTTPResponse, error) {
+//	return r.Create(c)
+//}
 
 // ServiceRequest is an interface to different types of Singularity job requestType.
 type ServiceRequest interface {
-	create(*Client) (HTTPResponse, error)
+	Create(*Client) (HTTPResponse, error)
+	SetID(string) ServiceRequest
+	Get() SingularityRequest
+	SetInstances(int64) ServiceRequest
+	SetSchedule(string) (ServiceRequest, error)
+	SetScheduleType(string) (ServiceRequest, error)
+	SetNumRetriesOnFailures(int64) ServiceRequest
 }
 
-// NewOnDemandRequest accepts a string id and int number of instances.
-// This returns a RequestWorker struct which have parameters
-// required to create a ON_DEMAND type of Singularity job/task.
-func NewOnDemandRequest(id string) *RequestOnDemand {
-	return &RequestOnDemand{
-		ID:          id,
-		RequestType: "ON_DEMAND",
-	}
+// SetID accepts a string to assign a request ID.
+// This returns a SeVrviceRequest struct which have parameters
+// required to Create a ON_DEMAND type of Singularity job/task.
+func (r *SingularityRequest) SetID(s string) ServiceRequest {
+	r.ID = s
+	return r
 }
 
-// Create accepts ServiceRequest struct and creates a Singularity
-// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
-// ON_DEMAND, RUN_ONCE.
-func (r *RequestOnDemand) create(c *Client) (HTTPResponse, error) {
-	res, err := c.Rest.
-		R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(r).
-		Post(c.Endpoint + "/api/requests")
-
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
-	}
-
-	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
-
-	return HTTPResponse{
-		RestyResponse: res,
-		Body:          data,
-	}, nil
+// Get returns ID of a Singularity Request.
+func (r *SingularityRequest) Get() SingularityRequest {
+	return *r
 }
 
-// NewServiceRequest accepts a string id and int number of instances.
-// This returns a RequestWorker struct which have parameters
-// required to create a SERVICE type of Singularity job/task.
-func NewServiceRequest(id string, i int64) *RequestService {
-	return &RequestService{
-		ID:          id,
-		RequestType: "SERVICE",
-		Instances:   i,
-	}
+// SetNumRetriesOnFailures accepts an int64 and sets Service request type
+// number retires on failures.
+func (r *SingularityRequest) SetNumRetriesOnFailures(i int64) ServiceRequest {
+	r.NumRetriesOnFailure = i
+	return r
 }
 
-// Create accepts ServiceRequest struct and creates a Singularity
-// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
-// ON_DEMAND, RUN_ONCE.
-func (r *RequestService) create(c *Client) (HTTPResponse, error) {
-	res, err := c.Rest.
-		R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(r).
-		Post(c.Endpoint + "/api/requests")
-
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
-	}
-	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
-
-	return HTTPResponse{
-		RestyResponse: res,
-		Body:          data,
-	}, nil
-}
-
-// NewScheduledRequest accepts a string id, cron schedule format and scheduleType as string.
-// Only cron is accepted because this is widely know than quartz. This returns a RequestWorker
-// struct which have parameter required to
-// create a SCHEDULED type of Singularity job/task.
-func NewScheduledRequest(id, s, t string) (*RequestScheduled, error) {
-
+// SetScheduleType accepts a cron schedule format.
+// Only cron is accepted because this is widely know than quartz.
+func (r *SingularityRequest) SetScheduleType(t string) (ServiceRequest, error) {
 	if strings.ToLower(t) != "cron" {
 		return nil, fmt.Errorf("%v", "Only cron scheduleType is allowed.")
 	}
-	// Singularity Request expects CRON schedule a string. Hence, we just use cron package
-	// to parse and validate this value.
-	_, err := cron.Parse(s)
-	if err != nil {
-		return &RequestScheduled{}, fmt.Errorf("Parse %s cron schedule error %v", s, err)
-	}
-	return &RequestScheduled{
-		ID:           id,
-		RequestType:  "SCHEDULED",
-		ScheduleType: "CRON", // Only allow cron since this is widely known than quartz.
-		Schedule:     s,
-	}, nil
+	r.ScheduleType = t
+	return r, nil
 }
 
-// SetCronSchedule accepts a cron schedule format as string
+// SetSchedule accepts a cron schedule format as string
 // and set shedule for this request.
-func (r *RequestScheduled) SetCronSchedule(s string) error {
+func (r *SingularityRequest) SetSchedule(s string) (ServiceRequest, error) {
 	// Singularity Request expects CRON schedule a string. Hence, we just use cron package
 	// to parse and validate this value.
 	_, err := cron.Parse(s)
 
 	if err != nil {
-		return fmt.Errorf("Parse %s cron schedule error %v", s, err)
+		return nil, fmt.Errorf("Parse %s cron schedule error. %v", s, err)
 	}
 	r.Schedule = s
-	return nil
+	return r, nil
 }
 
-// Create accepts ServiceRequest struct and creates a Singularity
+// SetInstances accepts a cron schedule format as string
+// and set shedule for this request.
+func (r *SingularityRequest) SetInstances(i int64) ServiceRequest {
+	r.Instances = i
+	return r
+}
+
+// Create accepts ServiceRequest struct and Creates a Singularity
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
-func (r *RequestScheduled) create(c *Client) (HTTPResponse, error) {
-	res, err := c.Rest.
-		R().
-		SetHeader("Content-Type", "application/json").
-		SetBody(r).
-		Post(c.Endpoint + "/api/requests")
-
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
-	}
-
-	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
-
-	return HTTPResponse{
-		RestyResponse: res,
-		Body:          data,
-	}, nil
-}
-
-// NewWorkerRequest accepts a string id and int number of instances.
-// This returns a RequestWorker struct which have parameters
-// required to create a WORKER type of Singularity job/task.
-func NewWorkerRequest(id string, i int64) *RequestWorker {
-	return &RequestWorker{
-		ID:          id,
-		RequestType: "WORKER",
-		Instances:   i,
-	}
-}
-
-// Create accepts ServiceRequest struct and creates a Singularity
-// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
-// ON_DEMAND, RUN_ONCE.
-func (r *RequestWorker) create(c *Client) (HTTPResponse, error) {
-	res, err := c.Rest.R().SetBody(r).Post(c.Endpoint + "/api/requests")
-
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Create Singularity request error: %v", err)
-	}
-
-	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
-
-	return HTTPResponse{
-		RestyResponse: res,
-		Body:          data,
-	}, nil
-}
-
-// NewRunOnceRequest accepts a string id and int number of instances.
-// This returns a RequestRunOnce struct which have parameters
-// required to create a RUN_ONCE type of Singularity job/task.
-func NewRunOnceRequest(id string, i int64) *RequestRunOnce {
-	return &RequestRunOnce{
-		ID:          id,
-		RequestType: "RUN_ONCE",
-		Instances:   i,
-	}
-}
-
-// GetID is a placeho
-// Create accepts ServiceRequest struct and creates a Singularity
-// job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
-// ON_DEMAND, RUN_ONCE.
-func (r *RequestRunOnce) create(c *Client) (HTTPResponse, error) {
+func (r *SingularityRequest) Create(c *Client) (HTTPResponse, error) {
 	res, err := c.Rest.
 		R().
 		SetHeader("Content-Type", "application/json").
@@ -343,7 +277,7 @@ func NewRequestScale(id, m string, i, in int) *ScaleHTTPRequest {
 	}
 }
 
-// Scale accepts ServiceRequest struct and creates a Singularity
+// Scale accepts ServiceRequest struct and Creates a Singularity
 // job based on a requestType. Valid types are: SERVICE, WORKER, SCHEDULED,
 // ON_DEMAND, RUN_ONCE.
 func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
@@ -383,8 +317,8 @@ func NewDeploy(b bool, u SingularityRequest, d SingularityDeploy, m string) *Sin
 	}
 }
 
-// Create creates a deploy and attach to a existing request.
-func (r *SingularityDeployRequest) create(c *Client) (HTTPResponse, error) {
+// Create Creates a deploy and attach to a existing request.
+func (r *SingularityDeployRequest) Create(c *Client) (HTTPResponse, error) {
 	res, err := c.Rest.
 		R().
 		SetHeader("Content-Type", "application/json").

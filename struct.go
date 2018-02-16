@@ -4,12 +4,12 @@ package singularity
 //  for a single project or deployable item.
 type SingularityRequest struct {
 	ID                                              string            `json:"id"`
-	Instances                                       int64             `json:"instances"`
-	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
-	QuartzSchedule                                  string            `json:"quartzSchedule"`
+	Instances                                       int64             `json:"instances,omitempty"`
+	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure,omitempty"`
+	QuartzSchedule                                  string            `json:"quartzSchedule,omitempty"`
 	RequestType                                     string            `json:"requestType"`
-	Schedule                                        string            `json:"schedule"`
-	ScheduleType                                    string            `json:"scheduleType"`
+	Schedule                                        string            `json:"schedule,omitempty"`
+	ScheduleType                                    string            `json:"scheduleType,omitempty"`
 	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
@@ -25,8 +25,8 @@ type SingularityRequest struct {
 	RequiredRole                                    string            `json:"requiredRole"`
 	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
 	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
+	LoadBalanced                                    bool              `json:"loadBalanced,omitempty"`
+	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis,omitempty"`
 	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
 	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
@@ -122,145 +122,6 @@ type SingularityDeployResources struct {
 	MemoryMb float64 `json:"memoryMb"`
 	NumPorts int64   `json:"numPorts"`
 	DiskMb   float64 `json:"diskMb"`
-}
-
-// RequestService contains required HTTP body to create a Singularity Request with requestType
-// SERVICE.
-type RequestService struct {
-	ID                                              string            `json:"id"`
-	Instances                                       int64             `json:"instances"`
-	RequestType                                     string            `json:"requestType"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
-	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
-	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
-	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
-	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
-	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
-	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
-	BounceAfterScale                                bool              `json:"bounceAfterScale"`
-	RackSensitive                                   bool              `json:"rackSensitive"`
-	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
-	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
-	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
-	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
-	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
-	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
-}
-
-// RequestOnDemand contains required HTTP body to create a Singularity Request with requestType
-// ON_DEMAND.
-type RequestOnDemand struct {
-	ID                                              string            `json:"id"`
-	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
-	RequestType                                     string            `json:"requestType"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
-	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
-	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
-	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
-	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
-	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
-	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
-	BounceAfterScale                                bool              `json:"bounceAfterScale"`
-	RackSensitive                                   bool              `json:"rackSensitive"`
-	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
-	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
-	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
-	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
-	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
-	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
-	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
-}
-
-// RequestScheduled contains required HTTP body to create a Singularity Request with requestType
-// Scheduled.
-type RequestScheduled struct {
-	ID                                              string            `json:"id"`
-	NumRetriesOnFailure                             int64             `json:"numRetriesOnFailure"`
-	RequestType                                     string            `json:"requestType"`
-	Schedule                                        string            `json:"schedule"`
-	ScheduleType                                    string            `json:"scheduleType"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
-	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
-	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
-	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
-	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
-	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
-	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
-	BounceAfterScale                                bool              `json:"bounceAfterScale"`
-	RackSensitive                                   bool              `json:"rackSensitive"`
-	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
-	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
-	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
-	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	KillOldNonLongRunningTasksAfterMillis           int               `json:"killOldNonLongRunningTasksAfterMillis"`
-	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
-	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
-	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
-}
-
-// RequestWorker contains required HTTP body to create a Singularity Request with requestType
-// WORKER.
-type RequestWorker struct {
-	ID                                              string            `json:"id"`
-	Instances                                       int64             `json:"instances"`
-	RequestType                                     string            `json:"requestType"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
-	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
-	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
-	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
-	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
-	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
-	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
-	BounceAfterScale                                bool              `json:"bounceAfterScale"`
-	RackSensitive                                   bool              `json:"rackSensitive"`
-	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
-	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
-	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
-	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
-	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
-	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
-}
-
-// RequestRunOnce contains required HTTP body to create a Singularity Request with requestType
-// RUN_ONCE.
-type RequestRunOnce struct {
-	ID                                              string            `json:"id"`
-	Instances                                       int64             `json:"instances"`
-	RequestType                                     string            `json:"requestType"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
-	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
-	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
-	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
-	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
-	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
-	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
-	BounceAfterScale                                bool              `json:"bounceAfterScale"`
-	RackSensitive                                   bool              `json:"rackSensitive"`
-	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
-	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
-	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
-	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
-	LoadBalanced                                    bool              `json:"loadBalanced"`
-	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
-	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
-	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
 }
 
 // SingularityScaleRequest contains parameters for making scaling a request. For more info, please see:

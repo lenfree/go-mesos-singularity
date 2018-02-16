@@ -4,102 +4,237 @@ import (
 	"testing"
 )
 
-func TestOnDemandRequest(t *testing.T) {
-	expectedID := "test-ondemand"
-	expectedType := "ON_DEMAND"
-	req := NewOnDemandRequest(expectedID)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+func TestOnDemandRequestDefault(t *testing.T) {
+	var data = []struct {
+		expectedID   string
+		expectedType string
+	}{
+		{"test-id", "ON_DEMAND"},
+		{"demand-123", "ON_DEMAND"},
 	}
-	if req.RequestType != expectedType {
-		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+
+	for _, tt := range data {
+		req := NewRequest(ON_DEMAND, tt.expectedID).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("NewRequest(%s, %s): expected %s, got %s", "ON_DEMAND", tt.expectedID, tt.expectedID, req.ID)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("NewRequest(%s, %s): expected %s, got %s", "ON_DEMAND", tt.expectedType, tt.expectedType, req.RequestType)
+		}
 	}
 }
 
-func TestNewServiceRequest(t *testing.T) {
-	expectedID := "test-service"
-	expectedType := "SERVICE"
-	var n int64 = 3
-	req := NewServiceRequest(expectedID, n)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+func TestOnDemandRequestSet(t *testing.T) {
+	var data = []struct {
+		initID       string
+		expectedID   string
+		expectedType string
+	}{
+		{"myid", "test-id", "ON_DEMAND"},
+		{"odl-idname", "demand-123", "ON_DEMAND"},
+		{"", "new-id", "ON_DEMAND"},
 	}
-	if req.Instances != n {
-		t.Errorf("Got %v, expected %v", req.Instances, n)
-	}
-	if req.RequestType != expectedType {
-		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+
+	for _, tt := range data {
+		req := NewRequest(ON_DEMAND, tt.initID).SetID(tt.expectedID).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("NewRequest(%s, %s): expected %s, got %s", "ON_DEMAND", tt.initID, tt.expectedID, req.ID)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("NewRequest(%s, %s): expected %s, got %s", "ON_DEMAND", tt.initID, tt.expectedID, req.RequestType)
+		}
 	}
 }
 
-func TestNewScheduledRequest(t *testing.T) {
-	expectedID := "test-scheduled"
-	expectedType := "SCHEDULED"
-	expectedCron := "*/30 * * * *"
-	expectedScheduleType := "CRON"
-
-	req, _ := NewScheduledRequest(expectedID, expectedCron, expectedScheduleType)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
-	}
-	if req.RequestType != expectedType {
-		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
-	}
-	if req.Schedule != expectedCron || req.Schedule == "" {
-		t.Errorf("Got %v, expected %v", req.Schedule, expectedCron)
-	}
-	if req.ScheduleType != "CRON" {
-		t.Errorf("Got %s, expected %s", req.ScheduleType, expectedScheduleType)
+func TestNewServiceRequestDefault(t *testing.T) {
+	var data = []struct {
+		expectedID        string
+		expectedType      string
+		expectedInstances int64
+	}{
+		{"test-id", "SERVICE", 1},
+		{"service-123", "SERVICE", 1},
 	}
 
-	invalidCron := "* * * * * * *"
-	expectedError := "Parse * * * * * * * cron schedule error Expected 5 or 6 fields, found 7: * * * * * * *"
-	reqError, err := NewScheduledRequest(expectedID, invalidCron, "CRON")
-
-	if err.Error() != expectedError {
-		t.Errorf("Got %v, expected %s", err, expectedError)
+	for _, tt := range data {
+		req := NewRequest(SERVICE, tt.expectedID).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
+	}
+}
+func TestNewServiceRequestSet(t *testing.T) {
+	var data = []struct {
+		expectedID         string
+		expectedType       string
+		expectedInstances  int64
+		expectedNumRetries int64
+	}{
+		{"test-id", "SERVICE", 0, 5},
+		{"test123", "SERVICE", 2, 3},
 	}
 
-	if reqError.Schedule != "" {
-		t.Errorf("Got %v, expected %s", err, expectedError)
-	}
-
-	_, err = NewScheduledRequest(expectedID, invalidCron, "quartz")
-
-	if err == nil {
-		t.Errorf("Got %v, expected %s", err, "Only cron scheduleType is allowed.")
+	for _, tt := range data {
+		req := NewRequest(SERVICE, tt.expectedID).
+			SetInstances(tt.expectedInstances).
+			SetNumRetriesOnFailures(tt.expectedNumRetries).
+			Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
 	}
 }
 
-func TestNewWorkerRequest(t *testing.T) {
-	expectedID := "test-worker"
-	expectedType := "WORKER"
-	var n int64 = 5
-	req := NewWorkerRequest(expectedID, n)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+func TestNewScheduledRequestSet(t *testing.T) {
+	var data = []struct {
+		actualID             string
+		actualType           string
+		actualCron           string
+		actualScheduleType   string
+		expectedID           string
+		expectedType         string
+		expectedCron         string
+		expectedScheduleType string
+		expectedError        bool
+	}{
+		{"test-scheduled", "SCHEDULED", "*/30 * * * *", "CRON", "test-scheduled", "SCHEDULED", "*/30 * * * *", "CRON", false},
+		{"failed-scheduled", "SCHEDULED", "* * * * * * *", "CRON", "failed-scheduled", "SCHEDULED", "Parse * * * * * * * cron schedule error. Expected 5 or 6 fields, found 7: * * * * * * *", "CRON", true},
 	}
-	if req.Instances != n {
-		t.Errorf("Got %v, expected %v", req.Instances, n)
-	}
-	if req.RequestType != expectedType {
-		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+
+	for _, tt := range data {
+		s := NewRequest(SCHEDULED, tt.actualID)
+		sched, _ := s.SetScheduleType(tt.actualScheduleType)
+		schedType, err := sched.SetSchedule(tt.actualCron)
+		// Catch invalid cron format which should return error.
+		if tt.expectedError == true {
+			if err == nil {
+				t.Errorf("SetSchedule(%s): expected %v, actual %v", tt.actualCron, tt.expectedCron, err.Error())
+			}
+		}
+		if err == nil {
+			req := schedType.SetID(tt.actualID).Get()
+
+			if req.ID != tt.expectedID {
+				t.Errorf("SetID(%s): expected %v, actual %v", tt.actualID, tt.expectedID, req.ID)
+			}
+			if req.Schedule != tt.expectedCron {
+				t.Errorf("SetSchedule(%s): expected %v, actual %v", tt.actualCron, tt.expectedCron, req.Schedule)
+			}
+			if req.RequestType != tt.expectedType {
+				t.Errorf("NewRequest(%s, %s): expected %v, actual %v", "SCHEDULED", tt.actualID, tt.expectedCron, req.Schedule)
+			}
+			if req.ScheduleType != tt.expectedScheduleType {
+				t.Errorf("SetScheduleType(%s): expected %v, actual %v", tt.actualScheduleType, tt.expectedCron, req.Schedule)
+			}
+		}
 	}
 }
 
-func TestNewRunOnceRequest(t *testing.T) {
-	expectedID := "test-runonce"
-	expectedType := "RUN_ONCE"
-	var n int64 = 2
-	req := NewRunOnceRequest(expectedID, n)
-	if req.ID != expectedID {
-		t.Errorf("Got %s, expected %s", req.ID, expectedID)
+func TestNewWorkerRequestDefault(t *testing.T) {
+	var data = []struct {
+		expectedID        string
+		expectedType      string
+		expectedInstances int64
+	}{
+		{"test-id", "WORKER", 1},
+		{"test-id-3", "WORKER", 1},
 	}
-	if req.Instances != n {
-		t.Errorf("Got %v, expected %v", req.Instances, n)
+
+	for _, tt := range data {
+		req := NewRequest(WORKER, tt.expectedID).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
 	}
-	if req.RequestType != expectedType {
-		t.Errorf("Got %s, expected %s", req.RequestType, expectedType)
+}
+func TestNewWorkerRequestSet(t *testing.T) {
+	var data = []struct {
+		expectedID        string
+		expectedType      string
+		expectedInstances int64
+	}{
+		{"test-id", "WORKER", 0},
+		{"test-id-2", "WORKER", 2},
+	}
+
+	for _, tt := range data {
+		req := NewRequest(WORKER, tt.expectedID).SetInstances(tt.expectedInstances).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
+	}
+}
+
+func TestNewRunOnceRequestDefault(t *testing.T) {
+	var data = []struct {
+		expectedID        string
+		expectedType      string
+		expectedInstances int64
+	}{
+		{"test-id", "RUN_ONCE", 1},
+		{"test-id-2", "RUN_ONCE", 1},
+	}
+
+	for _, tt := range data {
+		req := NewRequest(RUN_ONCE, tt.expectedID).Get()
+		t.Logf("%v", req)
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
+	}
+}
+
+func TestNewRunOnceSet(t *testing.T) {
+	var data = []struct {
+		expectedID        string
+		expectedType      string
+		expectedInstances int64
+	}{
+		{"test-id", "RUN_ONCE", 0},
+		{"test-id-2", "RUN_ONCE", 2},
+	}
+
+	for _, tt := range data {
+		req := NewRequest(RUN_ONCE, tt.expectedID).SetInstances(tt.expectedInstances).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("Got %s, expected %s", req.ID, tt.expectedID)
+		}
+		if req.Instances != tt.expectedInstances {
+			t.Errorf("Got %v, expected %v", req.Instances, tt.expectedInstances)
+		}
+		if req.RequestType != tt.expectedType {
+			t.Errorf("Got %s, expected %s", req.RequestType, tt.expectedType)
+		}
 	}
 }
 
