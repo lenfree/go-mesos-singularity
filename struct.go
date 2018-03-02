@@ -362,12 +362,12 @@ type SingularityDeployWithLB struct {
 }
 
 type SingularityRunNowRequest struct {
-	SingularityDeployResources `json:"resources"` // optional	Override the resources from the active deploy for this run
-	RunID                      string             `json:"runId"`            // optional	An id to associate with this request which will be associated with the corresponding launched tasks
-	SkipHealthchecks           bool               `json:"skipHealthchecks"` // 	optional	If set to true, healthchecks will be skipped for this task run
-	CommandLineArgs            []string           `json:"commandLineArgs"`  //	optional	Command line arguments to be passed to the task
-	Message                    string             `json:"message"`          //optional	A message to show to users about why this action was taken
-	RunAt                      int64              `json:"runAt"`            //long	optional	Schedule this task to run at a specified time
+	SingularityDeployResources `json:"resources,omitempty"` // optional	Override the resources from the active deploy for this run
+	RunID                      string                       `json:"runId,omitempty"`            // optional	An id to associate with this request which will be associated with the corresponding launched tasks
+	SkipHealthchecks           bool                         `json:"skipHealthchecks,omitempty"` // 	optional	If set to true, healthchecks will be skipped for this task run
+	CommandLineArgs            []string                     `json:"commandLineArgs,omitempty"`  //	optional	Command line arguments to be passed to the task
+	Message                    string                       `json:"message,omitempty"`          //optional	A message to show to users about why this action was taken
+	RunAt                      int64                        `json:"runAt,omitEmpty"`            //long	optional	Schedule this task to run at a specified time
 }
 
 // SingularityExpiringPause contains information of a existing

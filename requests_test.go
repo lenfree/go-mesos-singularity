@@ -1173,3 +1173,76 @@ func TestDeployRequestAttachDeploy(t *testing.T) {
 		}
 	}
 }
+
+func TestDeployRunNowRequest(t *testing.T) {
+	var data = []struct {
+		id                string
+		resources         SingularityRunNowRequest
+		expectedResources SingularityRunNowRequest
+	}{
+		{
+			"test-id",
+			SingularityRunNowRequest{
+				SingularityDeployResources: SingularityDeployResources{
+					Cpus:     0.5,
+					MemoryMb: 128,
+					NumPorts: 1,
+				},
+				SkipHealthchecks: true,
+				CommandLineArgs:  []string{"-c test"},
+				Message:          "test deploy",
+			},
+			SingularityRunNowRequest{
+				SingularityDeployResources: SingularityDeployResources{
+					Cpus:     0.5,
+					MemoryMb: 128,
+					NumPorts: 1,
+				},
+				SkipHealthchecks: true,
+				CommandLineArgs:  []string{"-c test"},
+				Message:          "test deploy",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetSingularityRunNowRequest(tt.resources).Build()
+		if req.SingularityRunNowRequest.SingularityDeployResources.Cpus != tt.expectedResources.SingularityDeployResources.Cpus {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.SingularityDeployResources.Cpus,
+				req.SingularityRunNowRequest.SingularityDeployResources.Cpus)
+		}
+		if req.SingularityRunNowRequest.SingularityDeployResources.MemoryMb != tt.expectedResources.SingularityDeployResources.MemoryMb {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.SingularityDeployResources.MemoryMb,
+				req.SingularityRunNowRequest.SingularityDeployResources.MemoryMb)
+		}
+		if req.SingularityRunNowRequest.SingularityDeployResources.NumPorts != tt.expectedResources.SingularityDeployResources.NumPorts {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.SingularityDeployResources.NumPorts,
+				req.SingularityRunNowRequest.SingularityDeployResources.NumPorts)
+		}
+		if req.SingularityRunNowRequest.SkipHealthchecks != tt.expectedResources.SkipHealthchecks {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.SkipHealthchecks,
+				req.SingularityRunNowRequest.SkipHealthchecks)
+		}
+		if req.SingularityRunNowRequest.Message != tt.expectedResources.Message {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.Message,
+				req.SingularityRunNowRequest.Message)
+		}
+		eq := reflect.DeepEqual(req.SingularityRunNowRequest.CommandLineArgs, tt.expectedResources.CommandLineArgs)
+		if !eq {
+			t.Errorf("SetSingularityRunNowRequest(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.CommandLineArgs,
+				req.SingularityRunNowRequest.CommandLineArgs)
+		}
+	}
+}
