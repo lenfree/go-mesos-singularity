@@ -1,8 +1,30 @@
 package singularity
 
 import (
+	"reflect"
 	"testing"
 )
+
+func TestNewRequestNil(t *testing.T) {
+	var data = []struct {
+		id             string
+		expectedResult string
+	}{
+		{"test-id", "nil"},
+		{"demand-123", "nil"},
+	}
+
+	for _, tt := range data {
+		req := NewRequest(6, tt.id)
+		if req != nil {
+			t.Errorf("NewRequest(%s, %s): expected %s, got %s",
+				"ON_DEMAND",
+				tt.id,
+				tt.expectedResult,
+				req)
+		}
+	}
+}
 
 func TestOnDemandRequestDefault(t *testing.T) {
 	var data = []struct {
@@ -267,7 +289,7 @@ func TestNewRequestScale(t *testing.T) {
 	}
 }
 
-func TestNewDeploy(t *testing.T) {
+func TestNewDeployRequest(t *testing.T) {
 	expectedRequestID := "test-id-1"
 	expectedDeployID := "4"
 
@@ -332,3 +354,694 @@ func TestClient_GetRequests(t *testing.T) {
                st.Expect(t, gock.IsDone(), true)
 }
 */
+
+func TestNewDeleteDeploy(t *testing.T) {
+	type args struct {
+		requestID string
+		deployID  string
+	}
+	tests := []struct {
+		name string
+		args args
+		want DeleteHTTPDeploy
+	}{
+	// TODO: Add test cases.
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := NewDeleteDeploy(tt.args.requestID, tt.args.deployID); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewDeleteDeploy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestNewDeploy(t *testing.T) {
+	var data = []struct {
+		id         string
+		expectedID string
+	}{
+		{"test-id", "test-id"},
+		{"demand-123", "demand-123"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).Get()
+		if req.ID != tt.expectedID {
+			t.Errorf("NewDeploy(%s): expected %s, got %s", tt.id, tt.expectedID, req.ID)
+		}
+	}
+}
+
+func TestDeploySetRequestID(t *testing.T) {
+	var data = []struct {
+		id                        string
+		requestID                 string
+		expectedRequestID         string
+		expectedContainerInfoType string
+	}{
+		{"test-id", "request123", "request123", "DOCKER"},
+		{"demand-123", "myrequest", "myrequest", "DOCKER"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetRequestID(tt.requestID).Build()
+		if req.RequestID != tt.expectedRequestID {
+			t.Errorf("SetRequestID(%s): expected %s, got %s",
+				tt.requestID,
+				tt.expectedRequestID,
+				req.RequestID)
+		}
+		if req.ContainerInfo.Type != tt.expectedContainerInfoType {
+			t.Errorf("SetRequestID(%s): expected %s, got %s",
+				tt.requestID,
+				tt.expectedContainerInfoType,
+				req.ContainerInfo.Type)
+		}
+	}
+}
+
+func TestDeploySetContainerInfo(t *testing.T) {
+	var data = []struct {
+		id                    string
+		containerInfo         ContainerInfo
+		expectedContainerInfo ContainerInfo
+	}{
+		{
+			"test-id", ContainerInfo{
+				Docker: DockerInfo{
+					ForcePullImage: false,
+					SingularityDockerParameter: SingularityDockerParameter{
+						Key:   "hello",
+						Value: "world",
+					},
+				},
+				Type: "DOCKER",
+				Volumes: []SingularityVolume{
+					SingularityVolume{
+						HostPath:      "/tmp",
+						ContainerPath: "/tmp",
+						Mode:          "rw",
+					},
+				},
+			}, ContainerInfo{
+				Docker: DockerInfo{
+					ForcePullImage: false,
+					SingularityDockerParameter: SingularityDockerParameter{
+						Key:   "hello",
+						Value: "world",
+					},
+				},
+				Type: "DOCKER",
+				Volumes: []SingularityVolume{
+					SingularityVolume{
+						HostPath:      "/tmp",
+						ContainerPath: "/tmp",
+						Mode:          "rw",
+					},
+				},
+			},
+		},
+		{
+			"my-new_deploy", ContainerInfo{
+				Docker: DockerInfo{
+					ForcePullImage: true,
+					SingularityDockerParameter: SingularityDockerParameter{
+						Key:   "test",
+						Value: "true",
+					},
+				},
+				Type: "DOCKER",
+			}, ContainerInfo{
+				Docker: DockerInfo{
+					ForcePullImage: true,
+					SingularityDockerParameter: SingularityDockerParameter{
+						Key:   "test",
+						Value: "true",
+					},
+				},
+				Type: "DOCKER",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		deploy, _ := NewDeploy(tt.id).SetContainerInfo(tt.containerInfo)
+		req := deploy.Build()
+		if req.ContainerInfo.Docker.ForcePullImage != tt.expectedContainerInfo.Docker.ForcePullImage {
+			t.Errorf("SetContainer(%v): expected %v, got %v",
+				tt.containerInfo,
+				tt.expectedContainerInfo,
+				req.ContainerInfo)
+		}
+		if req.ContainerInfo.Docker.SingularityDockerParameter.Key != tt.expectedContainerInfo.Docker.SingularityDockerParameter.Key {
+			t.Errorf("SetContainer(%v): expected %v, got %v",
+				tt.containerInfo,
+				tt.expectedContainerInfo.Docker.SingularityDockerParameter.Key,
+				req.ContainerInfo.Docker.SingularityDockerParameter.Key)
+		}
+		if req.ContainerInfo.Docker.SingularityDockerParameter.Value != tt.expectedContainerInfo.Docker.SingularityDockerParameter.Value {
+			t.Errorf("SetContainer(%v): expected %v, got %v",
+				tt.containerInfo,
+				tt.expectedContainerInfo.Docker.SingularityDockerParameter.Value,
+				req.ContainerInfo.Docker.SingularityDockerParameter.Value)
+		}
+		if req.ContainerInfo.Type != tt.expectedContainerInfo.Type {
+			t.Errorf("SetContainer(%v): expected %v, got %v",
+				tt.containerInfo,
+				tt.expectedContainerInfo.Type,
+				req.ContainerInfo.Type)
+		}
+		for i := range req.ContainerInfo.Volumes {
+			if req.ContainerInfo.Volumes[i].Mode != tt.expectedContainerInfo.Volumes[i].Mode {
+				t.Errorf("SetContainer(%v): expected %v, got %v",
+					tt.containerInfo,
+					tt.expectedContainerInfo.Volumes[0].Mode,
+					req.ContainerInfo.Volumes[0].Mode)
+			}
+			if req.ContainerInfo.Volumes[i].HostPath != tt.expectedContainerInfo.Volumes[i].HostPath {
+				t.Errorf("SetContainer(%v): expected %v, got %v",
+					tt.containerInfo,
+					tt.expectedContainerInfo.Volumes[0].HostPath,
+					req.ContainerInfo.Volumes[0].HostPath)
+			}
+			if req.ContainerInfo.Volumes[i].ContainerPath != tt.expectedContainerInfo.Volumes[i].ContainerPath {
+				t.Errorf("SetContainer(%v): expected %v, got %v",
+					tt.containerInfo,
+					tt.expectedContainerInfo.Volumes[0].ContainerPath,
+					req.ContainerInfo.Volumes[i].ContainerPath)
+			}
+		}
+	}
+}
+func TestDeploySetURIs(t *testing.T) {
+	var data = []struct {
+		id           string
+		uris         []SingularityMesosArtifact
+		expectedUris []SingularityMesosArtifact
+	}{
+		{
+			"test-id",
+			[]SingularityMesosArtifact{
+				SingularityMesosArtifact{
+					URI: "file:///etc/docker.tar.gz",
+				},
+				SingularityMesosArtifact{
+					URI: "file:///etc/instance/environment.json",
+				},
+			},
+			[]SingularityMesosArtifact{
+				SingularityMesosArtifact{
+					URI: "file:///etc/docker.tar.gz",
+				},
+				SingularityMesosArtifact{
+					URI: "file:///etc/instance/environment.json",
+				},
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetURIs(tt.uris).Build()
+		if len(req.Uris) != len(tt.expectedUris) {
+			t.Errorf("SetURIs(%v): expected %v, got %v",
+				tt.uris,
+				len(tt.expectedUris),
+				len(req.Uris))
+		}
+		if len(tt.expectedUris) > 1 {
+			for i := range req.Uris {
+				if req.Uris[i].URI != tt.expectedUris[i].URI {
+					t.Errorf("SetURIs(%v): expected %s, got %s",
+						tt.uris,
+						tt.expectedUris[i].URI,
+						req.Uris[i].URI)
+				}
+			}
+		}
+	}
+}
+
+func TestDeploySetResources(t *testing.T) {
+	var data = []struct {
+		id                string
+		resources         SingularityDeployResources
+		expectedResources SingularityDeployResources
+	}{
+		{
+			"test-id",
+			SingularityDeployResources{
+				Cpus:     0.5,
+				MemoryMb: 128,
+				NumPorts: 1,
+			},
+			SingularityDeployResources{
+				Cpus:     0.5,
+				MemoryMb: 128,
+				NumPorts: 1,
+			},
+		}, {
+			"mydeploy",
+			SingularityDeployResources{
+				Cpus:     1.5,
+				MemoryMb: 512,
+				NumPorts: 3,
+			},
+			SingularityDeployResources{
+				Cpus:     1.5,
+				MemoryMb: 512,
+				NumPorts: 3,
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetResources(tt.resources).Build()
+		if req.SingularityDeployResources.Cpus != tt.expectedResources.Cpus {
+			t.Errorf("SetResources(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.Cpus,
+				req.SingularityDeployResources.Cpus)
+		}
+		if req.SingularityDeployResources.MemoryMb != tt.expectedResources.MemoryMb {
+			t.Errorf("SetResources(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.MemoryMb,
+				req.SingularityDeployResources.MemoryMb)
+		}
+		if req.SingularityDeployResources.NumPorts != tt.expectedResources.NumPorts {
+			t.Errorf("SetResources(%v): expected %v, got %v",
+				tt.resources,
+				tt.expectedResources.NumPorts,
+				req.SingularityDeployResources.NumPorts)
+		}
+	}
+}
+
+func TestDeploySetAutoAdvanceDeploySteps(t *testing.T) {
+	var data = []struct {
+		id                     string
+		autoDeployStep         bool
+		expectedAutoDeployStep bool
+	}{
+		{"test-id", true, true},
+		{"demand-123", false, false},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetAutoAdvanceDeploySteps(tt.autoDeployStep).Build()
+		if req.AutoAdvanceDeploySteps != tt.expectedAutoDeployStep {
+			t.Errorf("SetAutoAdvanceDeploySteps(%v): expected %v, got %v",
+				tt.autoDeployStep,
+				tt.expectedAutoDeployStep,
+				req.AutoAdvanceDeploySteps)
+		}
+	}
+}
+
+func TestDeploySetServiceBasePath(t *testing.T) {
+	var data = []struct {
+		id           string
+		path         string
+		expectedPath string
+	}{
+		{"test-id", "/index", "/index"},
+		{"demand-123", "/", "/"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetServiceBasePath(tt.path).Build()
+		if req.ServiceBasePath != tt.expectedPath {
+			t.Errorf("SetServiceBasePath(%v): expected %v, got %v",
+				tt.path,
+				tt.expectedPath,
+				req.ServiceBasePath)
+		}
+	}
+}
+
+func TestDeploySetMetadata(t *testing.T) {
+	var data = []struct {
+		id               string
+		metadata         map[string]string
+		expectedMetadata map[string]string
+	}{
+		{
+			"test-id",
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+		}, {
+			"mydeploy",
+			map[string]string{
+				"test": "true",
+			},
+			map[string]string{
+				"test": "true",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetMetadata(tt.metadata).Build()
+		eq := reflect.DeepEqual(req.Metadata, tt.expectedMetadata)
+		if !eq {
+			t.Errorf("SetMetadata(%v): expected %v, got %v",
+				tt.metadata,
+				tt.expectedMetadata,
+				req.Metadata)
+		}
+	}
+}
+
+func TestDeploySetLabels(t *testing.T) {
+	var data = []struct {
+		id             string
+		labels         map[string]string
+		expectedLabels map[string]string
+	}{
+		{
+			"test-id",
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+		}, {
+			"mydeploy",
+			map[string]string{
+				"test": "true",
+			},
+			map[string]string{
+				"test": "true",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetLabels(tt.labels).Build()
+		eq := reflect.DeepEqual(req.Labels, tt.expectedLabels)
+		if !eq {
+			t.Errorf("SetLabels(%v): expected %v, got %v",
+				tt.labels,
+				tt.expectedLabels,
+				req.Labels)
+		}
+	}
+}
+func TestDeploySetUser(t *testing.T) {
+	var data = []struct {
+		id           string
+		user         string
+		expectedUser string
+	}{
+		{"mydeploy", "jon doe", "jon doe"},
+		{"newdeploy_id", "me", "me"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetUser(tt.user).Build()
+		if req.User != tt.expectedUser {
+			t.Errorf("SetUser(%v): expected %v, got %v",
+				tt.user,
+				tt.expectedUser,
+				req.User)
+		}
+	}
+}
+func TestDeploySetDeployStepWaitTimeMs(t *testing.T) {
+	var data = []struct {
+		id           string
+		time         int
+		expectedTime int
+	}{
+		{"mydeploy", 30, 30},
+		{"newdeploy_id", 2, 2},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetDeployStepWaitTimeMs(tt.time).Build()
+		if req.DeployStepWaitTimeMs != tt.expectedTime {
+			t.Errorf("SetDeployStepWaitTimeMs(%v): expected %v, got %v",
+				tt.time,
+				tt.expectedTime,
+				req.DeployStepWaitTimeMs)
+		}
+	}
+}
+
+func TestDeploySetSkipHealthchecksOnDeploy(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         bool
+		expectedValue bool
+	}{
+		{"mydeploy", true, true},
+		{"newdeploy_id", false, false},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetSkipHealthchecksOnDeploy(tt.value).Build()
+		if req.SkipHealthchecksOnDeploy != tt.expectedValue {
+			t.Errorf("SetSkipHealthchecksOnDeploy(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.SkipHealthchecksOnDeploy)
+		}
+	}
+}
+func TestDeploySetCommand(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         string
+		expectedValue string
+	}{
+		{"mydeploy", "echo 'hello'", "echo 'hello'"},
+		{"newdeploy_id", "hostname", "hostname"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetCommand(tt.value).Build()
+		if req.Command != tt.expectedValue {
+			t.Errorf("SetCommand(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.Command)
+		}
+	}
+}
+func TestDeploySetDeployInstanceCountPerStep(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         int
+		expectedValue int
+	}{
+		{"mydeploy", 2, 2},
+		{"newdeploy_id", 5, 5},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetDeployInstanceCountPerStep(tt.value).Build()
+		if req.DeployInstanceCountPerStep != tt.expectedValue {
+			t.Errorf("SetDeployInstanceCountPerStep(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.DeployInstanceCountPerStep)
+		}
+	}
+}
+func TestDeploySetConsiderHealthyAfterRunningForSeconds(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         int64
+		expectedValue int64
+	}{
+		{"mydeploy", 10001, 10001},
+		{"newdeploy_id", 300, 300},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetConsiderHealthyAfterRunningForSeconds(tt.value).Build()
+		if req.ConsiderHealthyAfterRunningForSeconds != tt.expectedValue {
+			t.Errorf("SetConsiderHealthyAfterRunningForSeconds(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.ConsiderHealthyAfterRunningForSeconds)
+		}
+	}
+}
+
+func TestDeploySetMaxTaskRetries(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         int
+		expectedValue int
+	}{
+		{"mydeploy", 11, 11},
+		{"newdeploy_id", 3, 3},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetMaxTaskRetries(tt.value).Build()
+		if req.MaxTaskRetries != tt.expectedValue {
+			t.Errorf("SetMaxTaskRetries(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.MaxTaskRetries)
+		}
+	}
+}
+
+func TestDeploySetEnv(t *testing.T) {
+	var data = []struct {
+		id          string
+		env         map[string]string
+		expectedEnv map[string]string
+	}{
+		{
+			"test-id",
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+			map[string]string{
+				"bird":  "blue",
+				"snake": "green",
+				"cat":   "black",
+			},
+		}, {
+			"mydeploy",
+			map[string]string{
+				"test": "true",
+			},
+			map[string]string{
+				"test": "true",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetEnv(tt.env).Build()
+		eq := reflect.DeepEqual(req.Env, tt.expectedEnv)
+		if !eq {
+			t.Errorf("SetLabels(%v): expected %v, got %v",
+				tt.env,
+				tt.expectedEnv,
+				req.Env)
+		}
+	}
+}
+
+func TestDeploySetVersion(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         string
+		expectedValue string
+	}{
+		{"mydeploy", "release-01", "release-01"},
+		{"newdeploy_id", "v1.3", "v1.3"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetVersion(tt.value).Build()
+		if req.Version != tt.expectedValue {
+			t.Errorf("SetVersion(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.Version)
+		}
+	}
+}
+
+func TestDeploySetDeployHealthTimeoutSeconds(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         int64
+		expectedValue int64
+	}{
+		{"mydeploy", 10001, 10001},
+		{"newdeploy_id", 300, 300},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetDeployHealthTimeoutSeconds(tt.value).Build()
+		if req.DeployHealthTimeoutSeconds != tt.expectedValue {
+			t.Errorf("SetDeployHealthTimeoutSeconds(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.DeployHealthTimeoutSeconds)
+		}
+	}
+}
+
+func TestDeploySetArgs(t *testing.T) {
+	var data = []struct {
+		id           string
+		args         string
+		args1        string
+		expectedArgs []string
+	}{
+		{
+			"test-id",
+			"bird",
+			"snake",
+			[]string{
+				"bird",
+				"snake",
+			},
+		}, {
+			"mydeploy",
+			"test",
+			"true",
+			[]string{
+				"test",
+				"true",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetArgs(tt.args, tt.args1).Build()
+		eq := reflect.DeepEqual(req.Arguments, tt.expectedArgs)
+		if !eq {
+			t.Errorf("SetArgs(%v, %v): expected %v, got %v",
+				tt.args,
+				tt.args1,
+				tt.expectedArgs,
+				req.Arguments)
+		}
+	}
+}
+func TestDeploySetID(t *testing.T) {
+	var data = []struct {
+		id         string
+		newID      string
+		expectedID string
+	}{
+		{"test-id", "request123", "request123"},
+		{"demand-123", "myrequest", "myrequest"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetID(tt.newID).Build()
+		if req.ID != tt.expectedID {
+			t.Errorf("SetID(%s): expected %s, got %s",
+				tt.newID,
+				tt.expectedID,
+				req.ID)
+		}
+	}
+}

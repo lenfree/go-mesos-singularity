@@ -187,7 +187,7 @@ func (r *SingularityRequest) Create(c *Client) (HTTPResponse, error) {
 	}, nil
 }
 
-// DeleteHTTPRequest contain id string and SingularityDeployRequest required
+// DeleteHTTPRequest contain id string and *SingularityDeployRequest required
 // parameter to delete a existing request.
 type DeleteHTTPRequest struct {
 	id string
@@ -317,8 +317,8 @@ type DeployRequest interface {
 	AttachDeploy(SingularityDeploy) DeployRequest
 }
 
-// NewDeploy returns an empty DeployRequest struct which you could use to set parameters.
-func NewDeploy() DeployRequest {
+// NewDeployRequest returns an empty DeployRequest struct which you could use to set parameters.
+func NewDeployRequest() DeployRequest {
 	return new(SingularityDeployRequest)
 }
 
@@ -418,4 +418,222 @@ func (r DeleteHTTPDeploy) delete(c *Client) (HTTPResponse, error) {
 		RequestParent: data,
 	}
 	return response, nil
+}
+
+// Deploy is an interface to create a Singularity Deploy object.
+type Deploy interface {
+	Build() *SingularityDeploy
+	Get() SingularityDeploy
+	SetRequestID(string) Deploy
+	SetContainerInfo(ContainerInfo) (Deploy, error)
+	SetArgs(...string) Deploy
+	SetURIs([]SingularityMesosArtifact) Deploy
+	SetResources(SingularityDeployResources) Deploy
+	SetCustomExecutorID(string) Deploy
+	SetCustomExecutorSource(string) Deploy
+	SetAutoAdvanceDeploySteps(bool) Deploy
+	SetServiceBasePath(string) Deploy
+	SetMetadata(map[string]string) Deploy
+	SetLabels(map[string]string) Deploy
+	SetUser(string) Deploy
+	SetDeployStepWaitTimeMs(int) Deploy
+	SetSkipHealthchecksOnDeploy(bool) Deploy
+	SetCommand(string) Deploy
+	SetDeployInstanceCountPerStep(int) Deploy
+	SetConsiderHealthyAfterRunningForSeconds(int64) Deploy
+	SetSingularityRunNowRequest(SingularityRunNowRequest) Deploy
+	SetMaxTaskRetries(int) Deploy
+	SetEnv(map[string]string) Deploy
+	SetVersion(string) Deploy
+	SetID(string) Deploy
+	SetDeployHealthTimeoutSeconds(int64) Deploy
+}
+
+// NewDeploy accept a deploy ID string and returns a Singularity deploy object.
+func NewDeploy(id string) Deploy {
+	return &SingularityDeploy{
+		ID: id,
+		ContainerInfo: ContainerInfo{
+			Type: "DOCKER", // We only support DOCKER at the moment.
+		},
+	}
+}
+
+// Get returns a Singularity Deploy object.
+func (d *SingularityDeploy) Get() SingularityDeploy {
+	return *d
+}
+
+// SetRequestID accepts a string request ID which is associated with this deploy.
+// This is required.
+func (d *SingularityDeploy) SetRequestID(id string) Deploy {
+	d.RequestID = id
+	return d
+}
+
+// Should I create a Constructor for containerinfo object?
+
+// SetContainerInfo accepts a string request ID which is associated with this deploy.
+// This is optional.  Currently only supports DOCKER.
+func (d *SingularityDeploy) SetContainerInfo(c ContainerInfo) (Deploy, error) {
+	if c.Type != "DOCKER" {
+		return nil, fmt.Errorf("Error setting Container Type, %v", "Only supports DOCKER. Please create an issue if you need other than DOCKER.")
+	}
+	d.ContainerInfo = c
+	return d, nil
+}
+
+// SetArgs accepts variadic string of command arguments. This is optional.
+func (d *SingularityDeploy) SetArgs(s ...string) Deploy {
+	for _, i := range s {
+		d.Arguments = append(d.Arguments, i)
+	}
+	return d
+}
+
+// SetURIs accepts a list of SingularityMesosArtifact. This list
+// of URIs to download before executing the deploy command. This is optional.
+func (d *SingularityDeploy) SetURIs(u []SingularityMesosArtifact) Deploy {
+	for _, i := range u {
+		d.Uris = append(d.Uris, i)
+	}
+	return d
+}
+
+// SetResources accepts a SingularityDeployResources object for this deploy. This
+// is optional.
+func (d *SingularityDeploy) SetResources(r SingularityDeployResources) Deploy {
+	d.SingularityDeployResources = r
+	return d
+}
+
+// SetCustomExecutorID accepts an ID string as Custom Mesos executor id. This
+// is optional.
+func (d *SingularityDeploy) SetCustomExecutorID(id string) Deploy {
+	d.CustomExecutorID = id
+	return d
+}
+
+// SetCustomExecutorSource accepts a string as Custom Mesos executor source. This
+// is optional.
+func (d *SingularityDeploy) SetCustomExecutorSource(s string) Deploy {
+	d.CustomExecutorSource = s
+	return d
+}
+
+// SetAutoAdvanceDeploySteps accepts a bool which sets deploy to automatically
+// advance to the next target instance count after deployStepWaitTimeMs seconds.
+func (d *SingularityDeploy) SetAutoAdvanceDeploySteps(b bool) Deploy {
+	d.AutoAdvanceDeploySteps = b
+	return d
+}
+
+// SetServiceBasePath accepts a string. The base path for the API exposed
+// by the deploy. Used in conjunction with the Load balancer API. This
+// is optional.
+func (d *SingularityDeploy) SetServiceBasePath(p string) Deploy {
+	d.ServiceBasePath = p
+	return d
+}
+
+// SetMetadata accepts a map of string of string. Map of metadata key/value pairs
+// associated with the deployment. This is optional.
+func (d *SingularityDeploy) SetMetadata(m map[string]string) Deploy {
+	d.Metadata = m
+	return d
+}
+
+// SetLabels accepts map of string of string. Labels for all tasks
+// associated with this deploy. This is optional.
+func (d *SingularityDeploy) SetLabels(m map[string]string) Deploy {
+	d.Labels = m
+	return d
+}
+
+// SetUser accepts a string and set tasks as this user. This is optional.
+func (d *SingularityDeploy) SetUser(u string) Deploy {
+	d.User = u
+	return d
+}
+
+// SetDeployStepWaitTimeMs accepts an time int to wait this long between
+// deploy steps. This is optional.
+func (d *SingularityDeploy) SetDeployStepWaitTimeMs(t int) Deploy {
+	d.DeployStepWaitTimeMs = t
+	return d
+}
+
+// SetSkipHealthchecksOnDeploy accepts a bool which allows skipping of
+// health checks when deploying. This is optional.
+func (d *SingularityDeploy) SetSkipHealthchecksOnDeploy(b bool) Deploy {
+	d.SkipHealthchecksOnDeploy = b
+	return d
+}
+
+// SetCommand accepts a string command to execute for this deployment. This
+// is optional.
+func (d *SingularityDeploy) SetCommand(c string) Deploy {
+	d.Command = c
+	return d
+}
+
+// SetDeployInstanceCountPerStep accepts a count int. Deploy this many instances at a time.
+// This parameter is optional.
+func (d *SingularityDeploy) SetDeployInstanceCountPerStep(c int) Deploy {
+	d.DeployInstanceCountPerStep = c
+	return d
+}
+
+// SetConsiderHealthyAfterRunningForSeconds accepts a t int64. Number of seconds that a
+// service must be healthy to consider the deployment to be successful. This is optional.
+func (d *SingularityDeploy) SetConsiderHealthyAfterRunningForSeconds(t int64) Deploy {
+	d.ConsiderHealthyAfterRunningForSeconds = t
+	return d
+}
+
+// SetSingularityRunNowRequest accepts a SinguarltiyRunNowRequest object. Settings used
+// to run this deploy immediately. This is optional.
+func (d *SingularityDeploy) SetSingularityRunNowRequest(r SingularityRunNowRequest) Deploy {
+	d.SingularityRunNowRequest = r
+	return d
+}
+
+// SetMaxTaskRetries accepts a count int allowed at most this many failed
+// tasks to be retried before failing the deploy. This is optional.
+func (d *SingularityDeploy) SetMaxTaskRetries(c int) Deploy {
+	d.MaxTaskRetries = c
+	return d
+}
+
+// SetEnv accepts a map of string of string. This map of environment
+//  variable definitions. This is optional.
+func (d *SingularityDeploy) SetEnv(e map[string]string) Deploy {
+	d.Env = e
+	return d
+}
+
+// SetVersion accepts a string for deploy version. This is optional.
+func (d *SingularityDeploy) SetVersion(v string) Deploy {
+	d.Version = v
+	return d
+}
+
+// SetID accepts an id string and set this deploy ID.
+func (d *SingularityDeploy) SetID(id string) Deploy {
+	d.ID = id
+	return d
+}
+
+// SetDeployHealthTimeoutSeconds accepts a time in seconds int64. This number of seconds
+// that Singularity waits for this service to become healthy
+// (for it to download artifacts, start running, and optionally pass healthchecks.)
+//  This is optional.
+func (d *SingularityDeploy) SetDeployHealthTimeoutSeconds(t int64) Deploy {
+	d.DeployHealthTimeoutSeconds = t
+	return d
+}
+
+// Build builds a SingularityDeploy object.
+func (d *SingularityDeploy) Build() *SingularityDeploy {
+	return d
 }
