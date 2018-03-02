@@ -308,13 +308,44 @@ func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
 	return response, nil
 }
 
-func NewDeploy(b bool, u SingularityRequest, d SingularityDeploy, m string) *SingularityDeployRequest {
-	return &SingularityDeployRequest{
-		UnpauseOnSuccessfulDeploy: b,
-		SingularityDeploy:         d,
-		SingularityRequest:        u,
-		Message:                   m,
-	}
+// DeployRequest is an interface to create a Singularity Deploy object.
+type DeployRequest interface {
+	Create(*Client) (HTTPResponse, error)
+	AttachRequest(SingularityRequest) DeployRequest
+	SetUnpauseOnSuccessfulDeploy(bool) DeployRequest
+	SetMessage(string) DeployRequest
+	AttachDeploy(SingularityDeploy) DeployRequest
+}
+
+// NewDeploy returns an empty DeployRequest struct which you could use to set parameters.
+func NewDeploy() DeployRequest {
+	return new(SingularityDeployRequest)
+}
+
+// AttachRequest accepts a Singularity Request object and use this request data for this deploy
+// , and update the request on successful deploy.
+func (r *SingularityDeployRequest) AttachRequest(s SingularityRequest) DeployRequest {
+	r.SingularityRequest = s
+	return r
+}
+
+// SetMessage accepts a string message to show users about this deploy (metadata).
+func (r *SingularityDeployRequest) SetMessage(m string) DeployRequest {
+	r.Message = m
+	return r
+}
+
+// SetUnpauseOnSuccessfulDeploy accepts bool. If deploy is successful, also unpause the request.
+func (r *SingularityDeployRequest) SetUnpauseOnSuccessfulDeploy(b bool) DeployRequest {
+	r.UnpauseOnSuccessfulDeploy = b
+	return r
+}
+
+// AttachDeploy accepts a Singularity Deploy object, containing all the required details
+// about the Deploy.
+func (r *SingularityDeployRequest) AttachDeploy(d SingularityDeploy) DeployRequest {
+	r.SingularityDeploy = d
+	return r
 }
 
 // Create Creates a deploy and attach to a existing request.
