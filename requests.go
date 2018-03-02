@@ -315,6 +315,7 @@ type DeployRequest interface {
 	SetUnpauseOnSuccessfulDeploy(bool) DeployRequest
 	SetMessage(string) DeployRequest
 	AttachDeploy(SingularityDeploy) DeployRequest
+	Build() *SingularityDeployRequest
 }
 
 // NewDeployRequest returns an empty DeployRequest struct which you could use to set parameters.
@@ -345,6 +346,11 @@ func (r *SingularityDeployRequest) SetUnpauseOnSuccessfulDeploy(b bool) DeployRe
 // about the Deploy.
 func (r *SingularityDeployRequest) AttachDeploy(d SingularityDeploy) DeployRequest {
 	r.SingularityDeploy = d
+	return r
+}
+
+// Build returns a SingularityDeployRequest object.
+func (r *SingularityDeployRequest) Build() *SingularityDeployRequest {
 	return r
 }
 

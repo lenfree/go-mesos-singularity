@@ -1045,3 +1045,131 @@ func TestDeploySetID(t *testing.T) {
 		}
 	}
 }
+
+func TestDeploySetCustomerExecutorID(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         string
+		expectedValue string
+	}{
+		{"test-id", "myexecutor-id", "myexecutor-id"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetCustomExecutorID(tt.value).Build()
+		if req.CustomExecutorID != tt.expectedValue {
+			t.Errorf("SetID(%s): expected %s, got %s",
+				tt.value,
+				tt.expectedValue,
+				req.CustomExecutorID)
+		}
+	}
+}
+
+func TestDeploySetCustomerExecutorSource(t *testing.T) {
+	var data = []struct {
+		id            string
+		value         string
+		expectedValue string
+	}{
+		{"test-id", "/bin/custom-executor", "/bin/custom-executor"},
+	}
+
+	for _, tt := range data {
+		req := NewDeploy(tt.id).SetCustomExecutorSource(tt.value).Build()
+		if req.CustomExecutorSource != tt.expectedValue {
+			t.Errorf("SetID(%s): expected %s, got %s",
+				tt.value,
+				tt.expectedValue,
+				req.CustomExecutorSource)
+		}
+	}
+}
+
+func TestDeployRequestAttachRequest(t *testing.T) {
+	var data = []struct {
+		value         SingularityRequest
+		expectedValue SingularityRequest
+	}{
+		{
+			SingularityRequest{
+				ID: "myrequest-id",
+			}, SingularityRequest{
+				ID: "myrequest-id",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeployRequest().AttachRequest(tt.value).Build()
+		eq := reflect.DeepEqual(req.SingularityRequest, tt.expectedValue)
+		if !eq {
+			t.Errorf("AttachRequest(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.CustomExecutorSource)
+		}
+	}
+}
+func TestDeployRequestSetMessage(t *testing.T) {
+	var data = []struct {
+		value         string
+		expectedValue string
+	}{
+		{"this is a test message.", "this is a test message."},
+	}
+
+	for _, tt := range data {
+		req := NewDeployRequest().SetMessage(tt.value).Build()
+		if req.Message != tt.expectedValue {
+			t.Errorf("SetMessage(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.Message)
+		}
+	}
+}
+
+func TestDeployRequestSetUnpauseOnSuccessfulDeploy(t *testing.T) {
+	var data = []struct {
+		value         bool
+		expectedValue bool
+	}{
+		{true, true},
+	}
+
+	for _, tt := range data {
+		req := NewDeployRequest().SetUnpauseOnSuccessfulDeploy(tt.value).Build()
+		if req.UnpauseOnSuccessfulDeploy != tt.expectedValue {
+			t.Errorf("SetUnpauseOnSuccessfulDeploy(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue,
+				req.UnpauseOnSuccessfulDeploy)
+		}
+	}
+}
+func TestDeployRequestAttachDeploy(t *testing.T) {
+	var data = []struct {
+		value         SingularityDeploy
+		expectedValue SingularityDeploy
+	}{
+		{
+			SingularityDeploy{
+				ID: "my-test-deploy",
+			},
+			SingularityDeploy{
+				ID: "my-test-deploy",
+			},
+		},
+	}
+
+	for _, tt := range data {
+		req := NewDeployRequest().AttachDeploy(tt.value).Build()
+		if req.SingularityDeploy.ID != tt.expectedValue.ID {
+			t.Errorf("AttachDeploy(%v): expected %v, got %v",
+				tt.value,
+				tt.expectedValue.ID,
+				req.SingularityDeploy.ID)
+		}
+	}
+}
