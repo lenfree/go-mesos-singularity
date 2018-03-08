@@ -311,10 +311,10 @@ func (r *ScaleHTTPRequest) scale(c *Client) (HTTPResponse, error) {
 // DeployRequest is an interface to create a Singularity Deploy object.
 type DeployRequest interface {
 	Create(*Client) (HTTPResponse, error)
-	AttachRequest(SingularityRequest) DeployRequest
+	AttachRequest(Request) DeployRequest
 	SetUnpauseOnSuccessfulDeploy(bool) DeployRequest
 	SetMessage(string) DeployRequest
-	AttachDeploy(SingularityDeploy) DeployRequest
+	AttachDeploy(Deploy) DeployRequest
 	Build() *SingularityDeployRequest
 }
 
@@ -325,8 +325,8 @@ func NewDeployRequest() DeployRequest {
 
 // AttachRequest accepts a Singularity Request object and use this request data for this deploy
 // , and update the request on successful deploy.
-func (r *SingularityDeployRequest) AttachRequest(s SingularityRequest) DeployRequest {
-	r.SingularityRequest = s
+func (r *SingularityDeployRequest) AttachRequest(s Request) DeployRequest {
+	r.SingularityRequest = s.Get()
 	return r
 }
 
@@ -344,8 +344,8 @@ func (r *SingularityDeployRequest) SetUnpauseOnSuccessfulDeploy(b bool) DeployRe
 
 // AttachDeploy accepts a Singularity Deploy object, containing all the required details
 // about the Deploy.
-func (r *SingularityDeployRequest) AttachDeploy(d SingularityDeploy) DeployRequest {
-	r.SingularityDeploy = d
+func (r *SingularityDeployRequest) AttachDeploy(d Deploy) DeployRequest {
+	r.SingularityDeploy = *d.Build()
 	return r
 }
 
@@ -365,23 +365,23 @@ func (r *SingularityDeployRequest) Create(c *Client) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
 	}
 
-	if res.StatusCode() == 400 {
-		// 400	Deploy object is invalid
-		return HTTPResponse{}, fmt.Errorf("Create Singularity deploy error: %v", r)
+	if res.StatusCode() >= 200 && res.StatusCode() <= 299 {
+		// TODO: Maybe use interface and type assertion? Since response would have different types
+		// of responses based on request body sent.
+		var data SingularityRequestParent
+		err = c.Rest.JSONUnmarshal(res.Body(), &data)
+		if err != nil {
+			return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", err)
+		}
+		response := HTTPResponse{
+			RestyResponse: res,
+			RequestParent: data,
+		}
+		return response, nil
 	}
+	// 400	Deploy object is invalid
+	return HTTPResponse{}, fmt.Errorf("Create Singularity deploy error: %v", string(res.Body()))
 
-	// TODO: Maybe use interface and type assertion? Since response would have different types
-	// of responses based on request body sent.
-	var data SingularityRequestParent
-	err = c.Rest.JSONUnmarshal(res.Body(), &data)
-	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", err)
-	}
-	response := HTTPResponse{
-		RestyResponse: res,
-		RequestParent: data,
-	}
-	return response, nil
 }
 
 // NewDeleteDeploy accepts a requestID and deployID string and reutnrs
@@ -401,10 +401,10 @@ type DeleteHTTPDeploy struct {
 	deployID  string `json:"deployId"`
 }
 
-// DeleteDeploy accepts a *Client and delete a existing deploy. This cancel a pending deployment
+// Delete accepts a *Client and delete a existing deploy. This cancel a pending deployment
 // (best effort - the deploy may still succeed or fail).
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#delete-apideploysdeploydeployidrequestrequestid
-func (r DeleteHTTPDeploy) delete(c *Client) (HTTPResponse, error) {
+func (r DeleteHTTPDeploy) Delete(c *Client) (HTTPResponse, error) {
 	res, err := c.Rest.
 		R().
 		Delete(c.Endpoint + "/api/deploys/deploy/" + r.deployID + "/request/" + r.requestID)
@@ -416,7 +416,7 @@ func (r DeleteHTTPDeploy) delete(c *Client) (HTTPResponse, error) {
 
 	e := c.Rest.JSONUnmarshal(res.Body(), &data)
 	if e != nil {
-		return HTTPResponse{}, fmt.Errorf("Parse Singularity deploy delete error: %v", e)
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity deploy delete error: %v", string(res.Body()))
 	}
 
 	response := HTTPResponse{

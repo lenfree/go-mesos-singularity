@@ -429,8 +429,9 @@ func TestDeploySetContainerInfo(t *testing.T) {
 	}{
 		{
 			"test-id", ContainerInfo{
-				Docker: DockerInfo{
+				DockerInfo: DockerInfo{
 					ForcePullImage: false,
+					Image:          "golang:latest",
 					SingularityDockerParameter: SingularityDockerParameter{
 						Key:   "hello",
 						Value: "world",
@@ -445,8 +446,9 @@ func TestDeploySetContainerInfo(t *testing.T) {
 					},
 				},
 			}, ContainerInfo{
-				Docker: DockerInfo{
+				DockerInfo: DockerInfo{
 					ForcePullImage: false,
+					Image:          "golang:latest",
 					SingularityDockerParameter: SingularityDockerParameter{
 						Key:   "hello",
 						Value: "world",
@@ -464,8 +466,9 @@ func TestDeploySetContainerInfo(t *testing.T) {
 		},
 		{
 			"my-new_deploy", ContainerInfo{
-				Docker: DockerInfo{
+				DockerInfo: DockerInfo{
 					ForcePullImage: true,
+					Image:          "golang:latest",
 					SingularityDockerParameter: SingularityDockerParameter{
 						Key:   "test",
 						Value: "true",
@@ -473,8 +476,9 @@ func TestDeploySetContainerInfo(t *testing.T) {
 				},
 				Type: "DOCKER",
 			}, ContainerInfo{
-				Docker: DockerInfo{
+				DockerInfo: DockerInfo{
 					ForcePullImage: true,
+					Image:          "golang:latest",
 					SingularityDockerParameter: SingularityDockerParameter{
 						Key:   "test",
 						Value: "true",
@@ -488,23 +492,29 @@ func TestDeploySetContainerInfo(t *testing.T) {
 	for _, tt := range data {
 		deploy, _ := NewDeploy(tt.id).SetContainerInfo(tt.containerInfo)
 		req := deploy.Build()
-		if req.ContainerInfo.Docker.ForcePullImage != tt.expectedContainerInfo.Docker.ForcePullImage {
+		if req.ContainerInfo.DockerInfo.Image != tt.expectedContainerInfo.DockerInfo.Image {
 			t.Errorf("SetContainer(%v): expected %v, got %v",
 				tt.containerInfo,
 				tt.expectedContainerInfo,
 				req.ContainerInfo)
 		}
-		if req.ContainerInfo.Docker.SingularityDockerParameter.Key != tt.expectedContainerInfo.Docker.SingularityDockerParameter.Key {
+		if req.ContainerInfo.DockerInfo.ForcePullImage != tt.expectedContainerInfo.DockerInfo.ForcePullImage {
 			t.Errorf("SetContainer(%v): expected %v, got %v",
 				tt.containerInfo,
-				tt.expectedContainerInfo.Docker.SingularityDockerParameter.Key,
-				req.ContainerInfo.Docker.SingularityDockerParameter.Key)
+				tt.expectedContainerInfo,
+				req.ContainerInfo)
 		}
-		if req.ContainerInfo.Docker.SingularityDockerParameter.Value != tt.expectedContainerInfo.Docker.SingularityDockerParameter.Value {
+		if req.ContainerInfo.DockerInfo.SingularityDockerParameter.Key != tt.expectedContainerInfo.DockerInfo.SingularityDockerParameter.Key {
 			t.Errorf("SetContainer(%v): expected %v, got %v",
 				tt.containerInfo,
-				tt.expectedContainerInfo.Docker.SingularityDockerParameter.Value,
-				req.ContainerInfo.Docker.SingularityDockerParameter.Value)
+				tt.expectedContainerInfo.DockerInfo.SingularityDockerParameter.Key,
+				req.ContainerInfo.DockerInfo.SingularityDockerParameter.Key)
+		}
+		if req.ContainerInfo.DockerInfo.SingularityDockerParameter.Value != tt.expectedContainerInfo.DockerInfo.SingularityDockerParameter.Value {
+			t.Errorf("SetContainer(%v): expected %v, got %v",
+				tt.containerInfo,
+				tt.expectedContainerInfo.DockerInfo.SingularityDockerParameter.Value,
+				req.ContainerInfo.DockerInfo.SingularityDockerParameter.Value)
 		}
 		if req.ContainerInfo.Type != tt.expectedContainerInfo.Type {
 			t.Errorf("SetContainer(%v): expected %v, got %v",
@@ -1088,13 +1098,16 @@ func TestDeploySetCustomerExecutorSource(t *testing.T) {
 
 func TestDeployRequestAttachRequest(t *testing.T) {
 	var data = []struct {
-		value         SingularityRequest
+		value         Request
 		expectedValue SingularityRequest
 	}{
 		{
+			Request{
+				SingularityRequest: SingularityRequest{
+					ID: "myrequest-id",
+				},
+			},
 			SingularityRequest{
-				ID: "myrequest-id",
-			}, SingularityRequest{
 				ID: "myrequest-id",
 			},
 		},
@@ -1107,7 +1120,7 @@ func TestDeployRequestAttachRequest(t *testing.T) {
 			t.Errorf("AttachRequest(%v): expected %v, got %v",
 				tt.value,
 				tt.expectedValue,
-				req.CustomExecutorSource)
+				req.SingularityRequest)
 		}
 	}
 }
@@ -1164,7 +1177,7 @@ func TestDeployRequestAttachDeploy(t *testing.T) {
 	}
 
 	for _, tt := range data {
-		req := NewDeployRequest().AttachDeploy(tt.value).Build()
+		req := NewDeployRequest().AttachDeploy(&tt.value).Build()
 		if req.SingularityDeploy.ID != tt.expectedValue.ID {
 			t.Errorf("AttachDeploy(%v): expected %v, got %v",
 				tt.value,

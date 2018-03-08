@@ -86,6 +86,63 @@ func ExampleDeleteRequest() {
 	// lenfree-test-run-once
 }
 
+func ExampleCreateDeploy() {
+	c := singularity.NewConfig().SetHost("localhost").SetPort(80).SetRetry(3).Build()
+	client := singularity.NewClient(c)
+
+	res, _ := singularity.NewRequest(ON_DEMAND, "").
+		SetID("test_id").
+		Create(client)
+
+	info := singularity.ContainerInfo{
+		Type: "DOCKER",
+		DockerInfo: singularity.DockerInfo{
+			ForcePullImage: false,
+			Network:        "BRIDGE",
+			Image:          "golang:latest",
+		},
+	}
+	resource := singularity.SingularityDeployResources{
+		Cpus:     0.5,
+		MemoryMb: 128,
+	}
+	d := singularity.NewDeploy("tset_deploy_2")
+	label := map[string]string{"owner": "lenfree"}
+	c_info, _ := d.SetContainerInfo(info)
+	deploy := c_info.SetLabels(label).
+		SetCommand("bash").
+		SetArgs("-xc", "date").
+		SetRequestID("test_id").
+		SetSkipHealthchecksOnDeploy(true).
+		SetResources(resource).
+		Build()
+	newdeploy, err := singularity.NewDeployRequest().AttachRequest(res.Body).
+		AttachDeploy(deploy).Build().Create(client)
+	if err != nil {
+		fmt.Println(err)
+		fmt.Printf("%v\n", deploy)
+		os.Exit(1)
+	}
+	fmt.Printf("success with %s\n", newdeploy.RequestParent.State)
+
+	// Output:
+	//success with ACTIVE
+
+	fmt.Printf("success with %v\n", newdeploy.RequestParent.ActiveDeploy.DockerInfo)
+
+	// Output:
+	//singularity.DockerInfo{
+	//	Parameters:map[string]string{},
+	//	ForcePullImage:false,
+	//	SingularityDockerParameter:singularity.SingularityDockerParameter{
+	//		Key:"",
+	//		Value:""
+	//	},
+	//	Privileged:false,
+	//	Network:"BRIDGE",
+	//	Image:"arbornetworks-docker-docker.bintray.io/aws-cli_0.2.0:18da34d"}
+}
+
 func ExampleScaleRequest() {
 	c := singularity.NewConfig().
 		SetHost("localhost/singularity").

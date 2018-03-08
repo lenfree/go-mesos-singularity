@@ -87,9 +87,9 @@ type Docker struct {
 // container type.
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#-singularitycontainerinfo
 type ContainerInfo struct {
-	Docker  DockerInfo          `json:"docker"`
-	Type    string              `json:"type"` // Allowable values: MESOS, DOCKER. Default is MESOS.
-	Volumes []SingularityVolume `json:"volumes,omitempty"`
+	DockerInfo `json:"docker"`
+	Type       string              `json:"type"` // Allowable values: MESOS, DOCKER. Default is MESOS.
+	Volumes    []SingularityVolume `json:"volumes,omitempty"`
 }
 
 //https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerInfo
@@ -97,6 +97,11 @@ type DockerInfo struct {
 	Parameters                 map[string]string `json:"parameters,omitempty"`
 	ForcePullImage             bool              `json:"forcePullImage,omitempty"`
 	SingularityDockerParameter `json:"dockerParameters,omitEmpty"`
+	Privileged                 bool   `json:"privileged,omitEmpty"`
+	Network                    string `json:"network,omitEmpty"`
+	//network	com.hubspot.mesos.SingularityDockerNetworkType	optional	Docker netowkr type. Value can be BRIDGE, HOST, or NONE
+	//portMappings	Array[SingularityDockerPortMapping]	optional	List of port mappings
+	Image string `json:"image"`
 }
 
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerParameter
