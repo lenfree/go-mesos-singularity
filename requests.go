@@ -234,7 +234,7 @@ func (r DeleteHTTPRequest) delete(c *Client) (HTTPResponse, error) {
 
 	err = c.Rest.JSONUnmarshal(res.Body(), &data)
 	if err != nil {
-		return HTTPResponse{}, fmt.Errorf("parse singularity request delete error: %v", err)
+		return HTTPResponse{}, fmt.Errorf("parse singularity request delete error: %v", string(res.Body()))
 	}
 
 	response := HTTPResponse{
