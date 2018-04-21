@@ -22,7 +22,7 @@ type SingularityRequest struct {
 	RackSensitive                                   bool              `json:"rackSensitive"`
 	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
 	Owners                                          []string          `json:"owners"`
-	RequiredRole                                    string            `json:"requiredRole"`
+	RequiredRole                                    string            `json:"requiredRole,omitempty"`
 	ScheduledExpectedRuntimeMillis                  int               `json:"scheduledExpectedRuntimeMillis"`
 	RequiredSlaveAttributes                         map[string]string `json:"requiredSlaveAttributes"`
 	LoadBalanced                                    bool              `json:"loadBalanced,omitempty"`
@@ -295,7 +295,7 @@ type SingularityDeploy struct {
 	RequestID                             string                              `json:"requestId"`                          // required	Singularity Request Id which is associated with this deploy.
 	DeployStepWaitTimeMs                  int                                 `json:"deployStepWaitTimeMs,omitempty"`     // optional	wait this long between deploy steps
 	SkipHealthchecksOnDeploy              bool                                `json:"skipHealthchecksOnDeploy,omitempty"` //optional	Allows skipping of health checks when deploying.
-	MesosLabels                           []SingularityMesosTaskLabel         `json:"mesosLabels,omitempty"`              //Array[SingularityMesosTaskLabel]	optional	Labels for all tasks associated with this deploy
+	MesosLabels                           *[]SingularityMesosTaskLabel        `json:"mesosLabels,omitempty"`              //Array[SingularityMesosTaskLabel]	optional	Labels for all tasks associated with this deploy
 	Command                               string                              `json:"command,omitempty"`                  //optional	Command to execute for this deployment.
 	*ExecutorData                         `json:"executorData,omitempty"`     //	optional	Executor specific information
 	Shell                                 bool                                `json:"shell,omitempty"`                                 //optional	Override the shell property on the mesos task
