@@ -10,14 +10,14 @@ type SingularityRequest struct {
 	RequestType                                     string            `json:"requestType"`
 	Schedule                                        string            `json:"schedule,omitempty"`
 	ScheduleType                                    string            `json:"scheduleType,omitempty"`
-	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint"`
+	HideEvenNumberAcrossRacksHint                   bool              `json:"hideEventNumerAcrossRacksHint,omitempty"`
 	TaskExecutionTimeLimitMillis                    int               `json:"taskExecutionTimeLimitMills"`
 	TaskLogErrorRegexCaseSensitive                  bool              `json:"taskLogErrorRegexCaseSensitive"`
 	SkipHealthchecks                                bool              `json:"skipHealthchecks"`
 	WaitAtLeastMillisAfterTaskFinishesForReschedule int               `json:"waitAtleastMillisAfterTaskFinishesForReschedule"`
 	TaskPriorityLevel                               int               `json:"taksPriorityLevel"`
 	RackAffinity                                    []string          `json:"RackAffinity"`
-	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer"`
+	MaxTasksPerOffer                                int               `json:"maxTasksPerOffer,omitempty"`
 	BounceAfterScale                                bool              `json:"bounceAfterScale"`
 	RackSensitive                                   bool              `json:"rackSensitive"`
 	AllowedSlaveAttributes                          map[string]string `json:"allowedSlaveAttributes"`
@@ -94,11 +94,11 @@ type ContainerInfo struct {
 
 //https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerInfo
 type DockerInfo struct {
-	Parameters                 map[string]string `json:"parameters,omitempty"`
-	ForcePullImage             bool              `json:"forcePullImage,omitempty"`
-	SingularityDockerParameter `json:"dockerParameters,omitEmpty"`
-	Privileged                 bool   `json:"privileged,omitEmpty"`
-	Network                    string `json:"network,omitEmpty"`
+	Parameters                  map[string]string            `json:"parameters,omitempty"`
+	ForcePullImage              bool                         `json:"forcePullImage,omitempty"`
+	SingularityDockerParameters []SingularityDockerParameter `json:"dockerParameters,omitEmpty"`
+	Privileged                  bool                         `json:"privileged,omitEmpty"`
+	Network                     string                       `json:"network,omitEmpty"`
 	//network	com.hubspot.mesos.SingularityDockerNetworkType	optional	Docker netowkr type. Value can be BRIDGE, HOST, or NONE
 	//portMappings	Array[SingularityDockerPortMapping]	optional	List of port mappings
 	Image string `json:"image"`
@@ -297,7 +297,7 @@ type SingularityDeploy struct {
 	SkipHealthchecksOnDeploy              bool                                `json:"skipHealthchecksOnDeploy,omitempty"` //optional	Allows skipping of health checks when deploying.
 	MesosLabels                           []SingularityMesosTaskLabel         `json:"mesosLabels,omitempty"`              //Array[SingularityMesosTaskLabel]	optional	Labels for all tasks associated with this deploy
 	Command                               string                              `json:"command,omitempty"`                  //optional	Command to execute for this deployment.
-	ExecutorData                          `json:"executorData,omitempty"`     //	optional	Executor specific information
+	*ExecutorData                         `json:"executorData,omitempty"`     //	optional	Executor specific information
 	Shell                                 bool                                `json:"shell,omitempty"`                                 //optional	Override the shell property on the mesos task
 	Timestamp                             int64                               `json:"timestamp,omitempty"`                             //long	optional	Deploy timestamp.
 	DeployInstanceCountPerStep            int                                 `json:"deployInstanceCountPerStep,omitempty"`            //	optional	deploy this many instances at a time
@@ -531,6 +531,6 @@ type SingularityDeleteRequest struct {
 type SingularityDeployRequest struct {
 	UnpauseOnSuccessfulDeploy bool                    //optional	If deploy is successful, also unpause the request
 	SingularityDeploy         `json:"deploy"`         // required	The Singularity deploy object, containing all the required details about the Deploy
-	SingularityRequest        `json:"updatedRequest"` // optional	use this request data for this deploy, and update the request on successful deploy
+	*SingularityRequest       `json:"updatedRequest"` // optional	use this request data for this deploy, and update the request on successful deploy
 	Message                   string                  //optional	A message to show users about this deploy (metadata)
 }

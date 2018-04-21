@@ -326,7 +326,8 @@ func NewDeployRequest() DeployRequest {
 // AttachRequest accepts a Singularity Request object and use this request data for this deploy
 // , and update the request on successful deploy.
 func (r *SingularityDeployRequest) AttachRequest(s Request) DeployRequest {
-	r.SingularityRequest = s.Get()
+	req := s.Get()
+	r.SingularityRequest = &req
 	return r
 }
 
