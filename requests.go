@@ -79,8 +79,11 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
 	}
 
+	var data SingularityRequestParent
+	err = c.Rest.JSONUnmarshal(res.Body(), data)
 	return HTTPResponse{
 		RestyResponse: res,
+		RequestParent: data,
 	}, nil
 }
 

@@ -514,8 +514,15 @@ type SingularityRequestParent struct {
 	SingularityRequest        `json:"request"`
 	SingularityPendingDeploy  `json:"pendingDeployState"`
 	SingularityExpiringScale  `json:"expiringScale"`
-	SingularityDeployState    `json:"requestDeployState"`
-	State                     string `json:"state"`
+	RequestDeployState        struct {
+		ActiveDeploy struct {
+			DeployID  string `json:"deployId"`
+			RequestID string `json:"requestId"`
+			Timestamp int64  `json:"timestamp"`
+		} `json:"activeDeploy"`
+		RequestID string `json:"requestId"`
+	} `json:"requestDeployState"`
+	State string `json:"state"`
 }
 
 // SingularityDeleteRequest contains HTTP body for a Delete Singularity Request. Please see below URL for
