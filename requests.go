@@ -79,11 +79,14 @@ func (c *Client) GetRequestByID(id string) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Get Singularity request not found: %v", err)
 	}
 
-	var data SingularityRequestParent
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
+	var data Request
+	err = c.Rest.JSONUnmarshal(res.Body(), &data)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity request error: %v", err)
+	}
 	return HTTPResponse{
 		RestyResponse: res,
-		RequestParent: data,
+		Body:          data,
 	}, nil
 }
 
@@ -182,7 +185,10 @@ func (r *SingularityRequest) Create(c *Client) (HTTPResponse, error) {
 	}
 
 	var data Request
-	err = c.Rest.JSONUnmarshal(res.Body(), data)
+	err = c.Rest.JSONUnmarshal(res.Body(), &data)
+	if err != nil {
+		return HTTPResponse{}, fmt.Errorf("Parse Singularity create request error: %v", err)
+	}
 
 	return HTTPResponse{
 		RestyResponse: res,

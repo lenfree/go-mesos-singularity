@@ -50,9 +50,16 @@ type RequestDeployState struct {
 // This have a JSON response of /api/requests/request/ID.
 type Request struct {
 	SingularityRequest `json:"request"`
-	RequestDeployState `json:"requestDeployState"`
-	State              string `json:"state"`
-	ActiveDeploy       struct {
+	RequestDeployState struct {
+		ActiveDeploy struct {
+			DeployID  string `json:"deployId"`
+			RequestID string `json:"requestId"`
+			Timestamp int64  `json:"timestamp"`
+		} `json:"activeDeploy"`
+		RequestID string `json:"requestId"`
+	} `json:"requestDeployState"`
+	State        string `json:"state"`
+	ActiveDeploy struct {
 		Arguments                  []string `json:"arguments"`
 		Command                    string   `json:"command"`
 		ContainerInfo              `json:"containerInfo"`
@@ -62,6 +69,17 @@ type Request struct {
 		SingularityDeployResources `json:"resources"`
 		Uris                       []string `json:"uris"`
 	} `json:"activeDeploy"`
+	RunImmediately struct {
+		Resources struct {
+			Cpus     int64 `json:"cpus"`
+			DiskMb   int64 `json:"diskMb"`
+			MemoryMb int64 `json:"memoryMb"`
+			NumPorts int64 `json:"numPorts"`
+		} `json:"resources"`
+		RunAt int64  `json:"runAt"`
+		RunID string `json:"runId"`
+	} `json:"runImmediately"`
+	SkipHealthchecksOnDeploy bool `json:"skipHealthchecksOnDeploy"`
 }
 
 // Requests is a slice of Request.
@@ -496,6 +514,8 @@ type SingularityRequestParent struct {
 		Arguments              []string    `json:"arguments"`
 		TaskEnv                interface{} `json:"taskEnv"` //Map[int,Map[string,string]]	Map of environment variable overrides for specific task instances.
 		AutoAdvanceDeploySteps bool        `json:"autoAdvanceDeploySteps"`
+		ID                     string      `json:"id"`
+		Command                string      `json:"command"`
 	} `json:"pendingDeploy"`
 	ActiveDeploy struct {
 		CustomExecutorID           string `json:"customExecutorId"`
@@ -508,6 +528,8 @@ type SingularityRequestParent struct {
 		Arguments              []string    `json:"arguments"`
 		TaskEnv                interface{} `json:"taskEnv"` //Map[int,Map[string,string]]	Map of environment variable overrides for specific task instances.
 		AutoAdvanceDeploySteps bool        `json:"autoAdvanceDeploySteps"`
+		ID                     string      `json:"id"`
+		Command                string      `json:"command"`
 	} `json:"activeDeploy"`
 	SingularityExpiringPause  `json:"expiringPause"`
 	SingularityExpiringBounce `json:"expiringBounce"`
