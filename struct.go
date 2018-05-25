@@ -116,10 +116,19 @@ type DockerInfo struct {
 	ForcePullImage              bool                         `json:"forcePullImage,omitempty"`
 	SingularityDockerParameters []SingularityDockerParameter `json:"dockerParameters,omitEmpty"`
 	Privileged                  bool                         `json:"privileged,omitEmpty"`
-	Network                     string                       `json:"network,omitEmpty"`
-	//network	com.hubspot.mesos.SingularityDockerNetworkType	optional	Docker netowkr type. Value can be BRIDGE, HOST, or NONE
+	Network                     string                       `json:"network,omitEmpty"` //Value can be BRIDGE, HOST, or NONE
 	//portMappings	Array[SingularityDockerPortMapping]	optional	List of port mappings
-	Image string `json:"image"`
+	Image              string `json:"image"`
+	*DockerPortMapping `json:"portMappings,omitEmpty"`
+}
+
+//https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerPortMapping
+type DockerPortMapping struct {
+	HostPort          int    `json:"hostPort"`
+	ContainerPort     int    `json:"containerPort"`
+	ContainerPortType string `json:"containerPortType,omitempty"` //Allowable values: LITERAL, FROM_OFFER
+	Protocol          string `json:"protocol,omitempty"`          //Default is tcp
+	HostPortType      string `json:"hostPortType,omitempty"`      //Allowable values: LITERAL, FROM_OFFER
 }
 
 // https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerParameter
