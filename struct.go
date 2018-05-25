@@ -117,9 +117,8 @@ type DockerInfo struct {
 	SingularityDockerParameters []SingularityDockerParameter `json:"dockerParameters,omitEmpty"`
 	Privileged                  bool                         `json:"privileged,omitEmpty"`
 	Network                     string                       `json:"network,omitEmpty"` //Value can be BRIDGE, HOST, or NONE
-	//portMappings	Array[SingularityDockerPortMapping]	optional	List of port mappings
-	Image              string `json:"image"`
-	*DockerPortMapping `json:"portMappings,omitEmpty"`
+	Image                       string                       `json:"image"`
+	DockerPortMappings          []*DockerPortMapping         `json:"portMappings,omitEmpty"`
 }
 
 //https://github.com/HubSpot/Singularity/blob/master/Docs/reference/api.md#model-SingularityDockerPortMapping
