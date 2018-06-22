@@ -30,7 +30,6 @@ type SingularityRequest struct {
 	ScheduleTimeZone                                string            `json:"scheduledTimeZone"`
 	AllowBounceToSameHost                           bool              `json:"allowBounceToSamehost"`
 	TaskLogErrorRegex                               string            `json:"taskLogErrorRegex"`
-	SlavePlace                                      string            `json:"slavePlacement"`
 }
 
 // ActiveDeploy have a string deployId, requestId and a timestamp.
