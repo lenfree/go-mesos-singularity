@@ -61,7 +61,7 @@ func (c *Client) GetRequests() (*resty.Response, Requests, error) {
 		R().
 		Get(c.Endpoint + "/api/requests")
 
-	err = c.Rest.JSONUnmarshal(res.Body(), body)
+	err = c.Rest.JSONUnmarshal(res.Body(), &body)
 	if err != nil {
 		return &resty.Response{}, nil, fmt.Errorf("Get Singularity requests not found: %v", err)
 	}
