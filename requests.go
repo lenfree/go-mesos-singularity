@@ -402,7 +402,8 @@ func (r *SingularityDeployRequest) Create(c *Client) (HTTPResponse, error) {
 		return HTTPResponse{}, fmt.Errorf("Scale Singularity request error: %v", err)
 	}
 
-	if res.StatusCode() >= 200 && res.StatusCode() <= 299 {
+	// Status code 409 happens when job is still in pending status.
+	if res.StatusCode() >= 200 && res.StatusCode() <= 299 || res.StatusCode() == 409 {
 		// TODO: Maybe use interface and type assertion? Since response would have different types
 		// of responses based on request body sent.
 		var data SingularityRequestParent
